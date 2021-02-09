@@ -1,6 +1,6 @@
 package frc.robot;
 
-import edu.wpi.first.wpilibj.SpeedControllerGroup;
+import edu.wpi.first.wpilibj.SpeedController;
 
 // hello world
 public class RadialDrive {
@@ -13,9 +13,9 @@ public class RadialDrive {
     
     private double RADIUS_SCALE_FACTOR = 1;
 
-    private SpeedControllerGroup leftGroup, rightGroup;
+    private SpeedController leftGroup, rightGroup;
 
-    public RadialDrive(SpeedControllerGroup leftGroup, SpeedControllerGroup rightGroup) {
+    public RadialDrive(SpeedController leftGroup, SpeedController rightGroup) {
         this.leftGroup = leftGroup;
         this.rightGroup = rightGroup;
     }
