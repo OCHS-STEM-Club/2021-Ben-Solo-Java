@@ -33,16 +33,16 @@ public class RadialDrive {
         double turnScale = forwardAxis * (ROBOT_WIDTH / 2) / ((ROBOT_WIDTH / 2) + absRaidus);
         double forwardScale = -forwardAxis * (-(ROBOT_WIDTH / 2) / ((ROBOT_WIDTH / 2) + absRaidus) + 1);
 
-        double leftSpeedFactor = Utils.sign(radius) * (turnScale) + forwardScale;
-        double rightSpeedFactor = -Utils.sign(radius) * (turnScale) + forwardScale;
+        double leftSpeedFactor = -Utils.sign(radius) * (turnScale) + forwardScale;
+        double rightSpeedFactor = Utils.sign(radius) * (turnScale) + forwardScale;
 
 if(limit) {
     leftSpeedFactor *= SPEED_LIMIT;
     rightSpeedFactor *= SPEED_LIMIT;
 }
 
-        leftGroup.set(leftSpeedFactor);
-        rightGroup.set(-rightSpeedFactor);
+        leftGroup.set(-leftSpeedFactor);
+        rightGroup.set(rightSpeedFactor);
 
     }
 

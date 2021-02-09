@@ -25,9 +25,12 @@ public class Robot extends TimedRobot {
   private RadialDrive radialDrive = new RadialDrive(motorSetup.getLeftMotorController(),
       motorSetup.getRightMotorController());
 
+  private Path path = new Path(radialDrive);
+
   
 
   public Robot() {
+    path.addSegments(GeneratedPath.MAIN);
 
   }
 
@@ -68,11 +71,14 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
 
+    path.initDrive();
+
   }
 
   /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {
+    path.autoDrive();
 
   }
 
@@ -96,6 +102,13 @@ public class Robot extends TimedRobot {
   
     double turnAxis = controller.getRawAxis(0);
     double radius = Utils.getRadius(turnAxis);
+
+    if(controller.getPOV() == 270) {
+      radius = -24;
+
+    } else if (controller.getPOV() == 90) {
+      radius = 24;
+    }
   
     radialDrive.radialDrive(radius,forwardAxis);
 
