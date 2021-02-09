@@ -1,0 +1,44 @@
+package frc.robot;
+
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+
+import edu.wpi.first.wpilibj.SpeedController;
+
+public class BenSoloMotorSetup extends DriveMotorSetup {
+
+    private CANSparkMax driveMotorLeft = new CANSparkMax(2, MotorType.kBrushless);
+    private CANSparkMax driveMotorRight = new CANSparkMax(3, MotorType.kBrushless);
+
+    private CANSparkMax slaveMotorLeft1 = new CANSparkMax(4, MotorType.kBrushless);
+    private CANSparkMax slaveMotorLeft2 = new CANSparkMax(5, MotorType.kBrushless);
+    private CANSparkMax slaveMotorRight1 = new CANSparkMax(6, MotorType.kBrushless);
+    private CANSparkMax slaveMotorRight2 = new CANSparkMax(7, MotorType.kBrushless);
+
+    public BenSoloMotorSetup() {
+
+        slaveMotorLeft1.follow(driveMotorLeft, false);
+        slaveMotorLeft2.follow(driveMotorLeft, false);
+        slaveMotorRight1.follow(driveMotorRight, false);
+        slaveMotorRight2.follow(driveMotorRight, false);
+
+        driveMotorLeft.setSmartCurrentLimit(60);
+        driveMotorRight.setSmartCurrentLimit(60);
+        slaveMotorLeft1.setSmartCurrentLimit(60);
+        slaveMotorRight1.setSmartCurrentLimit(60);
+        slaveMotorLeft2.setSmartCurrentLimit(60);
+        slaveMotorRight2.setSmartCurrentLimit(60);
+
+    }
+
+    @Override
+    public SpeedController getLeftMotorController() {
+        return driveMotorLeft;
+    }
+
+    @Override
+    public SpeedController getRightMotorController() {
+        return driveMotorRight;
+    }
+
+}
