@@ -5,9 +5,14 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
+
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+
 import edu.wpi.first.wpilibj.SpeedController;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -18,7 +23,7 @@ import edu.wpi.first.wpilibj.XboxController;
  */
 public class Robot extends TimedRobot {
 
-  private DriveMotorSetup motorSetup = new BenSoloMotorSetup();
+  private BenSoloMotorSetup motorSetup = new BenSoloMotorSetup();
 
   private XboxController controller = new XboxController(0);
 
@@ -26,8 +31,6 @@ public class Robot extends TimedRobot {
       motorSetup.getRightMotorController());
 
   private Path path = new Path(radialDrive);
-
-  
 
   public Robot() {
     path.addSegments(GeneratedPath.MAIN);
@@ -92,25 +95,38 @@ public class Robot extends TimedRobot {
   public void teleopPeriodic() {
 
     double forwardAxis = controller.getRawAxis(3) - controller.getRawAxis(2);
-  
-    forwardAxis=Utils.scaleAxis(forwardAxis);
-  
-    if(controller.getRawButton(1))
-    {
+
+    forwardAxis = Utils.scaleAxis(forwardAxis);
+
+    if (controller.getRawButton(1)) {
       forwardAxis = 0.5 * forwardAxis;
     }
-  
+
     double turnAxis = controller.getRawAxis(0);
     double radius = Utils.getRadius(turnAxis);
 
-    if(controller.getPOV() == 270) {
+    if (controller.getPOV() == 270) {
       radius = -24;
 
     } else if (controller.getPOV() == 90) {
       radius = 24;
     }
-  
-    radialDrive.radialDrive(radius,forwardAxis);
+
+    if (controller.getRawButton(2)) {
+      motorSetup.getLeftCanEncoder().setPosition(0);
+      motorSetup.getRightCanEncoder().setPosition(0);
+
+    }
+
+    SmartDashboard.putNumber("left encoder", motorSetup.getLeftEncoderInches());
+    SmartDashboard.putNumber("right encoder", motorSetup.getRightEncoderInches());
+
+    SmartDashboard.putNumber("encoder factor", motorSetup.getRightCanEncoder().getPositionConversionFactor());
+
+
+
+
+    radialDrive.radialDrive(radius, forwardAxis);
 
   }
 

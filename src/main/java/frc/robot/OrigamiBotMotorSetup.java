@@ -26,4 +26,16 @@ public class OrigamiBotMotorSetup extends DriveMotorSetup {
         return rightGroup;
     }
 
+    @Override
+    public double getLeftEncoderInches() {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    @Override
+    public double getRightEncoderInches() {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
 }

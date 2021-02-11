@@ -1,9 +1,12 @@
 package frc.robot;
 
+import com.revrobotics.CANEncoder;
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANError;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj.SpeedController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class BenSoloMotorSetup extends DriveMotorSetup {
 
@@ -14,6 +17,9 @@ public class BenSoloMotorSetup extends DriveMotorSetup {
     private CANSparkMax slaveMotorLeft2 = new CANSparkMax(5, MotorType.kBrushless);
     private CANSparkMax slaveMotorRight1 = new CANSparkMax(6, MotorType.kBrushless);
     private CANSparkMax slaveMotorRight2 = new CANSparkMax(7, MotorType.kBrushless);
+    private CANEncoder leftCanEncoder = driveMotorLeft.getEncoder();
+    private CANEncoder rightCanEncoder = driveMotorRight.getEncoder();
+    private static final double GEAR_RATIO = (60d / 11d) * (50d / 38d);
 
     public BenSoloMotorSetup() {
 
@@ -29,6 +35,11 @@ public class BenSoloMotorSetup extends DriveMotorSetup {
         slaveMotorLeft2.setSmartCurrentLimit(60);
         slaveMotorRight2.setSmartCurrentLimit(60);
 
+        CANError lerr = leftCanEncoder.setPositionConversionFactor(1 / GEAR_RATIO * 6 * Math.PI);
+        CANError rerr = rightCanEncoder.setPositionConversionFactor(1 / GEAR_RATIO * 6 * Math.PI);
+
+        SmartDashboard.putBoolean("encoder conversion error", lerr != CANError.kOk || rerr != CANError.kOk);
+
     }
 
     @Override
@@ -39,6 +50,25 @@ public class BenSoloMotorSetup extends DriveMotorSetup {
     @Override
     public SpeedController getRightMotorController() {
         return driveMotorRight;
+    }
+
+    public CANEncoder getLeftCanEncoder() {
+        return leftCanEncoder;
+    }
+
+    public CANEncoder getRightCanEncoder() {
+        return rightCanEncoder;
+    }
+
+    @Override
+    public double getLeftEncoderInches() {
+        return leftCanEncoder.getPosition();
+
+    }
+
+    @Override
+    public double getRightEncoderInches() {
+        return rightCanEncoder.getPosition();
     }
 
 }
