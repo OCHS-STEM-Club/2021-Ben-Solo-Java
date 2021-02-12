@@ -6,6 +6,7 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 
+import com.kauailabs.navx.frc.AHRS;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
@@ -32,6 +33,14 @@ public class Robot extends TimedRobot {
 
   private Path path = new Path(radialDrive);
 
+  private AHRS navx = new AHRS();
+
+  private double startingAngle = 0;
+
+  private boolean turningFlag = false;
+
+  private double turnStartAngle = 0;
+
   public Robot() {
     path.addSegments(GeneratedPath.MAIN);
 
@@ -43,6 +52,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
+    startingAngle = navx.getAngle();
 
   }
 
@@ -81,13 +91,25 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {
-    path.autoDrive();
+    // path.autoDrive();
+
+    if (motorSetup.getLeftEncoderInches() < 0) {
+      radialDrive.radialDrive(0, 0);
+    } else if (motorSetup.getLeftEncoderInches() < 60) {
+      radialDrive.radialDrive(RadialDrive.STRAIGHT_RADIUS, 0.2);
+
+    } else {
+      radialDrive.radialDrive(0, 0);
+    }
 
   }
 
   /** This function is called once when teleop is enabled. */
   @Override
   public void teleopInit() {
+    startingAngle = navx.getAngle();
+    turningFlag = false;
+
   }
 
   /** This function is called periodically during operator control. */
@@ -118,15 +140,34 @@ public class Robot extends TimedRobot {
 
     }
 
+    if (controller.getRawButton(6)) {
+      turningFlag = true;
+      turnStartAngle = navx.getAngle();
+    } else
+
+    if (turningFlag) {
+
+      double speed = 0.5 * (navx.getAngle() - turnStartAngle)/90d;
+
+      speed = Math.max(0.2, speed);
+
+      SmartDashboard.putNumber("speed", speed);
+
+      radialDrive.radialDrive(0, speed, false);
+
+      if (navx.getAngle() - turnStartAngle > 90) {
+        turningFlag = false;
+      }
+    } else {
+      radialDrive.radialDrive(radius, forwardAxis);
+    }
+
     SmartDashboard.putNumber("left encoder", motorSetup.getLeftEncoderInches());
     SmartDashboard.putNumber("right encoder", motorSetup.getRightEncoderInches());
+    SmartDashboard.putNumber("heading", navx.getAngle() - startingAngle);
+    SmartDashboard.putBoolean("turning", turningFlag);
 
     SmartDashboard.putNumber("encoder factor", motorSetup.getRightCanEncoder().getPositionConversionFactor());
-
-
-
-
-    radialDrive.radialDrive(radius, forwardAxis);
 
   }
 
