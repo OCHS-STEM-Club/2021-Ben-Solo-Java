@@ -10,6 +10,7 @@ import com.kauailabs.navx.frc.AHRS;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
+import edu.wpi.first.wpilibj.AnalogPotentiometer;
 import edu.wpi.first.wpilibj.SpeedController;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
@@ -23,6 +24,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * project.
  */
 public class Robot extends TimedRobot {
+  private AnalogPotentiometer pot = new AnalogPotentiometer(1);
 
   private BenSoloMotorSetup motorSetup = new BenSoloMotorSetup();
 
@@ -39,10 +41,17 @@ public class Robot extends TimedRobot {
 
   private boolean turningFlag = false;
 
-  private double turnStartAngle = 0;
+  private double turnTargetAngle = 0;
+
+  private PIDController turningController = new PIDController(0.01, 0, 0.0011);
+  private PIDController driveController = new PIDController(0.019, 0, 0);
 
   public Robot() {
     path.addSegments(GeneratedPath.MAIN);
+    turningController.setMin(-0.6);
+    turningController.setMax(0.6);
+    driveController.setMin(-0.6);
+    driveController.setMax(0.6);
 
   }
 
@@ -67,6 +76,9 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
+    double potValue = pot.get();
+    SmartDashboard.putNumber("potValue", potValue);
+
   }
 
   /**
@@ -83,8 +95,10 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
+    motorSetup.getLeftCanEncoder().setPosition(0);
+    motorSetup.getRightCanEncoder().setPosition(0);
 
-    path.initDrive();
+    // path.initDrive();
 
   }
 
@@ -93,14 +107,12 @@ public class Robot extends TimedRobot {
   public void autonomousPeriodic() {
     // path.autoDrive();
 
-    if (motorSetup.getLeftEncoderInches() < 0) {
-      radialDrive.radialDrive(0, 0);
-    } else if (motorSetup.getLeftEncoderInches() < 60) {
-      radialDrive.radialDrive(RadialDrive.STRAIGHT_RADIUS, 0.2);
+    SmartDashboard.putNumber("left encoder", motorSetup.getLeftEncoderInches());
+    SmartDashboard.putNumber("right encoder", motorSetup.getRightEncoderInches());
 
-    } else {
-      radialDrive.radialDrive(0, 0);
-    }
+    double speed = driveController.getValue(120 - motorSetup.getLeftEncoderInches());
+
+    radialDrive.radialDrive(RadialDrive.STRAIGHT_RADIUS, speed);
 
   }
 
@@ -110,11 +122,19 @@ public class Robot extends TimedRobot {
     startingAngle = navx.getAngle();
     turningFlag = false;
 
+    SmartDashboard.putNumber("Kp", 0.01);
+    SmartDashboard.putNumber("Ki", 0);
+    SmartDashboard.putNumber("Kd", 0.0011);
+
   }
 
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
+
+    turningController.setKp(SmartDashboard.getNumber("Kp", 0));
+    turningController.setKi(SmartDashboard.getNumber("Ki", 0));
+    turningController.setKd(SmartDashboard.getNumber("Kd", 0));
 
     double forwardAxis = controller.getRawAxis(3) - controller.getRawAxis(2);
 
@@ -137,27 +157,36 @@ public class Robot extends TimedRobot {
     if (controller.getRawButton(2)) {
       motorSetup.getLeftCanEncoder().setPosition(0);
       motorSetup.getRightCanEncoder().setPosition(0);
+    }
 
+    if (controller.getRawButton(3)) {
+      turningFlag = false;
     }
 
     if (controller.getRawButton(6)) {
       turningFlag = true;
-      turnStartAngle = navx.getAngle();
+      turnTargetAngle = navx.getAngle() + 90;
+    } else
+
+    if (controller.getRawButton(5)) {
+      turningFlag = true;
+      turnTargetAngle = navx.getAngle() - 90;
     } else
 
     if (turningFlag) {
 
-      double speed = 0.5 * (navx.getAngle() - turnStartAngle)/90d;
+      double speed = turningController.getValue(turnTargetAngle - navx.getAngle());
 
-      speed = Math.max(0.2, speed);
+      // speed = Math.max(0.2, speed);
 
       SmartDashboard.putNumber("speed", speed);
 
       radialDrive.radialDrive(0, speed, false);
 
-      if (navx.getAngle() - turnStartAngle > 90) {
+      if (turningController.atTarget()) {
         turningFlag = false;
       }
+
     } else {
       radialDrive.radialDrive(radius, forwardAxis);
     }
@@ -168,6 +197,10 @@ public class Robot extends TimedRobot {
     SmartDashboard.putBoolean("turning", turningFlag);
 
     SmartDashboard.putNumber("encoder factor", motorSetup.getRightCanEncoder().getPositionConversionFactor());
+
+    if (controller.getRawButton(4)) {
+      radialDrive.radialDrive(RadialDrive.STRAIGHT_RADIUS, 0.075);
+    }
 
   }
 

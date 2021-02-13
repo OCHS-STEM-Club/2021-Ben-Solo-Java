@@ -35,6 +35,13 @@ public class BenSoloMotorSetup extends DriveMotorSetup {
         slaveMotorLeft2.setSmartCurrentLimit(60);
         slaveMotorRight2.setSmartCurrentLimit(60);
 
+        driveMotorLeft.setOpenLoopRampRate(0.25);
+        driveMotorRight.setOpenLoopRampRate(0.25);
+        slaveMotorLeft1.setOpenLoopRampRate(0.25);
+        slaveMotorRight1.setOpenLoopRampRate(0.25);
+        slaveMotorLeft2.setOpenLoopRampRate(0.25);
+        slaveMotorRight2.setOpenLoopRampRate(0.25);
+
         CANError lerr = leftCanEncoder.setPositionConversionFactor(1 / GEAR_RATIO * 6 * Math.PI);
         CANError rerr = rightCanEncoder.setPositionConversionFactor(1 / GEAR_RATIO * 6 * Math.PI);
 
