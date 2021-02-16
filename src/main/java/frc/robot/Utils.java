@@ -4,7 +4,7 @@ import com.kauailabs.navx.frc.AHRS;
 
 public class Utils {
 
-    private static double INPUT_SCALE_FACTOR = 100;
+    private static double INPUT_SCALE_FACTOR = 200;
     private static double NEGATIVE_ZERO = -0.0d;
 
     public static double scaleAxis(double getRawAxis) {

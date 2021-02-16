@@ -10,7 +10,7 @@ public class RadialDrive {
     public static final double STRAIGHT_RADIUS = 1e8;
 
     public static final double SPEED_LIMIT = 0.6;
-    
+
     private double RADIUS_SCALE_FACTOR = 1;
 
     private SpeedController leftGroup, rightGroup;
@@ -36,10 +36,10 @@ public class RadialDrive {
         double leftSpeedFactor = -Utils.sign(radius) * (turnScale) + forwardScale;
         double rightSpeedFactor = Utils.sign(radius) * (turnScale) + forwardScale;
 
-if(limit) {
-    leftSpeedFactor *= SPEED_LIMIT;
-    rightSpeedFactor *= SPEED_LIMIT;
-}
+        if (limit) {
+            leftSpeedFactor *= SPEED_LIMIT;
+            rightSpeedFactor *= SPEED_LIMIT;
+        }
 
         leftGroup.set(-leftSpeedFactor);
         rightGroup.set(rightSpeedFactor);

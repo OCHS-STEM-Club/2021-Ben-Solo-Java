@@ -2,89 +2,109 @@ package frc.robot;
 
 import java.util.ArrayList;
 import java.util.List;
+import com.kauailabs.navx.frc.AHRS;
+
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Path {
 
     private List<Segment> segments = new ArrayList<>();
     private int step = 0;
+    private boolean turning = true;
+
     private RadialDrive drive;
-    private long t1;
-    private long t2;
+    private PIDController turningController, driveController;
+    private BenSoloMotorSetup motorSetup;
+    private AHRS navx;
 
-    public static class Builder {
-
-        private List<Segment> segments = new ArrayList<>();
-
-        public Builder add(double radius, double forwardAxis, long time) {
-            segments.add(new Segment(radius, forwardAxis, time));
-            return this;
-        }
-
-        public Path.Segment[] build() {
-            return segments.toArray(new Segment[0]);
-        }
-
-    }
-
-    public Path(RadialDrive drive) {
+    public Path(BenSoloMotorSetup motorSetup, AHRS navx, PIDController turningController, PIDController driveController,
+            RadialDrive drive) {
+        this.motorSetup = motorSetup;
+        this.turningController = turningController;
+        this.driveController = driveController;
+        this.navx = navx;
         this.drive = drive;
-
     }
 
     public void addSegments(Segment... segments) {
         for (Segment segment : segments) {
             this.segments.add(segment);
         }
-
-        this.segments.add(new Segment(RadialDrive.STRAIGHT_RADIUS, -.25, 100));
     }
 
     public void initDrive() {
-        step= 0;
-        t1 = System.currentTimeMillis();
+        step = 0;
+        turning = true;
+        motorSetup.getLeftCanEncoder().setPosition(0);
+        motorSetup.getRightCanEncoder().setPosition(0);
+
+        if (step < segments.size()) {
+            turningController.setTarget(segments.get(step).getHeadingDegrees());
+            driveController.setTarget(segments.get(step).getDistanceInches());
+        }
 
     }
 
     public void autoDrive() {
 
+        SmartDashboard.putString("turn info", String.format("step: %d, turning: %b", step, turning));
+
         if (step >= segments.size()) {
-            drive.radialDrive(0, 0, false);
+            drive.radialDrive(0, 0);
             return;
         }
 
-        t2 = System.currentTimeMillis();
         Segment segment = segments.get(step);
-        drive.radialDrive(segment.getRadius(), segment.getForwardAxis(), false);
 
-        if (t2 - t1 > segment.getTime()) {
-            step++;
-            t1 = System.currentTimeMillis();
+        if (turning) {
+
+            SmartDashboard.putNumber("turn error", turningController.getTarget() - navx.getAngle());
+
+            drive.radialDrive(0, turningController.getValue(navx.getAngle()), false);
+
+            if (turningController.atTarget()) {
+                turning = false;
+                motorSetup.getLeftCanEncoder().setPosition(0);
+                motorSetup.getRightCanEncoder().setPosition(0);
+            }
+
+        } else {
+
+            drive.radialDrive(RadialDrive.STRAIGHT_RADIUS, driveController.getValue(motorSetup.getLeftEncoderInches()),
+                    false);
+
+            if (driveController.atTarget()) {
+
+                step++;
+                turning = true;
+
+                if (step < segments.size()) {
+                    turningController.setTarget(segments.get(step).getHeadingDegrees());
+                    driveController.setTarget(segments.get(step).getDistanceInches());
+
+                }
+
+            }
+
         }
 
     }
 
     public static class Segment {
-        private double radius, forwardAxis;
-        private long time;
 
-        public Segment(double radius, double forwardAxis, long time) {
-            this.radius = radius;
-            this.forwardAxis = forwardAxis;
-            this.time = time;
+        private double headingDegrees, distanceInches;
 
+        public Segment(double headingDegrees, double distanceInches) {
+            this.headingDegrees = headingDegrees;
+            this.distanceInches = distanceInches;
         }
 
-        public double getRadius() {
-            return radius;
+        public double getDistanceInches() {
+            return distanceInches;
         }
 
-        public double getForwardAxis() {
-            return forwardAxis;
-        }
-
-        public long getTime() {
-            return time;
-
+        public double getHeadingDegrees() {
+            return headingDegrees;
         }
 
     }

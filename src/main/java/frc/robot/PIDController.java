@@ -11,13 +11,17 @@ public class PIDController {
   // tuning parameters
   private double Kp, Ki, Kd;
 
+  private double target;
+  // private double initialError = Double.NaN;
+
   // required fields for tracking error over time
   private double prevError = 0;
   private double integral = 0;
   private long prevTime = System.nanoTime();
 
   private int stopCounter = 0;
-  private int maxStopCounter = 18;
+  private int maxStopCounter = 10;
+  private double errorThreshold = 0.5;
 
   // optional min and max output values, default to NaN if unused
   private double min = Double.NaN, max = Double.NaN;
@@ -35,14 +39,29 @@ public class PIDController {
     this.Kd = Kd;
   }
 
+  public void setTarget(double point) {
+    target = point;
+    // initialError = Double.NaN;
+  }
+
+  public void setErrorThreshold(double errorThreshold) {
+    this.errorThreshold = errorThreshold;
+  }
+
   /**
    * Gets the value of the control output given the distance from the current
    * position to the desired position
    * 
-   * @param error the signed distance from the current to desired position
+   * @param currentValue the signed current position
    * @return the control output
    */
-  public double getValue(double error) {
+  public double getValue(double currentValue) {
+
+    double error = target - currentValue;
+
+    /*
+     * if(Double.isNaN(initialError)) { initialError = error; }
+     */
 
     // compute change in time since last getValue() call in seconds
     double timeDelta = (System.nanoTime() - prevTime) / 1e9;
@@ -66,7 +85,7 @@ public class PIDController {
       value = Math.min(value, max);
     }
 
-    if (Math.abs((prevError - error) / prevError) < 0.01) {
+    if (Math.abs(error) < errorThreshold/* * Math.abs(initialError) */) {
       stopCounter++;
     } else {
       stopCounter = 0;
@@ -120,6 +139,10 @@ public class PIDController {
     } else {
       return false;
     }
+  }
+
+  public double getTarget() {
+    return target;
   }
 
   @Override

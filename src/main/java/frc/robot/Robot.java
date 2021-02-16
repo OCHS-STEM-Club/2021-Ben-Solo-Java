@@ -33,26 +33,27 @@ public class Robot extends TimedRobot {
   private RadialDrive radialDrive = new RadialDrive(motorSetup.getLeftMotorController(),
       motorSetup.getRightMotorController());
 
-  private Path path = new Path(radialDrive);
-
   private AHRS navx = new AHRS();
 
   private double startingAngle = 0;
 
   private boolean turningFlag = false;
 
-  private double turnTargetAngle = 0;
-
   private PIDController turningController = new PIDController(0.01, 0, 0.0011);
   private PIDController driveController = new PIDController(0.019, 0, 0);
 
+  private Path path = new Path(motorSetup, navx, turningController, driveController, radialDrive);
+
   public Robot() {
-    path.addSegments(GeneratedPath.MAIN);
     turningController.setMin(-0.6);
     turningController.setMax(0.6);
+    turningController.setErrorThreshold(5);
+
     driveController.setMin(-0.6);
     driveController.setMax(0.6);
+    driveController.setErrorThreshold(1);
 
+    path.addSegments(GeneratedPath.MAIN);
   }
 
   /**
@@ -61,7 +62,10 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
-    startingAngle = navx.getAngle();
+
+    SmartDashboard.putNumber("Kp", 0.01);
+    SmartDashboard.putNumber("Ki", 0);
+    SmartDashboard.putNumber("Kd", 0.0011);
 
   }
 
@@ -76,8 +80,26 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
+
     double potValue = pot.get();
+
     SmartDashboard.putNumber("potValue", potValue);
+
+    SmartDashboard.putNumber("left encoder", motorSetup.getLeftEncoderInches());
+    SmartDashboard.putNumber("right encoder", motorSetup.getRightEncoderInches());
+    SmartDashboard.putNumber("heading", navx.getAngle());
+
+    double vLeft = motorSetup.getLeftCanEncoder().getVelocity();
+    double vRight = motorSetup.getRightCanEncoder().getVelocity();
+    double leftOverRight = vLeft / vRight;
+
+    SmartDashboard.putNumber("left RPM", vLeft);
+    SmartDashboard.putNumber("right RPM", vRight);
+    SmartDashboard.putNumber("LR RPM ratio", leftOverRight);
+
+    turningController.setKp(SmartDashboard.getNumber("Kp", 0));
+    turningController.setKi(SmartDashboard.getNumber("Ki", 0));
+    turningController.setKd(SmartDashboard.getNumber("Kd", 0));
 
   }
 
@@ -95,36 +117,39 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
+
+    startingAngle = navx.getAngle();
+    navx.setAngleAdjustment(-startingAngle);
+
     motorSetup.getLeftCanEncoder().setPosition(0);
     motorSetup.getRightCanEncoder().setPosition(0);
 
-    // path.initDrive();
+    path.initDrive();
 
   }
 
   /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {
-    // path.autoDrive();
 
-    SmartDashboard.putNumber("left encoder", motorSetup.getLeftEncoderInches());
-    SmartDashboard.putNumber("right encoder", motorSetup.getRightEncoderInches());
+    path.autoDrive();
 
-    double speed = driveController.getValue(120 - motorSetup.getLeftEncoderInches());
-
-    radialDrive.radialDrive(RadialDrive.STRAIGHT_RADIUS, speed);
+    /*
+     * double speed = driveController.getValue(120 -
+     * motorSetup.getLeftEncoderInches());
+     * 
+     * radialDrive.radialDrive(RadialDrive.STRAIGHT_RADIUS, speed);
+     */
 
   }
 
   /** This function is called once when teleop is enabled. */
   @Override
   public void teleopInit() {
-    startingAngle = navx.getAngle();
-    turningFlag = false;
 
-    SmartDashboard.putNumber("Kp", 0.01);
-    SmartDashboard.putNumber("Ki", 0);
-    SmartDashboard.putNumber("Kd", 0.0011);
+    startingAngle = navx.getAngle();
+    navx.setAngleAdjustment(-startingAngle);
+    turningFlag = false;
 
   }
 
@@ -132,9 +157,7 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
 
-    turningController.setKp(SmartDashboard.getNumber("Kp", 0));
-    turningController.setKi(SmartDashboard.getNumber("Ki", 0));
-    turningController.setKd(SmartDashboard.getNumber("Kd", 0));
+    
 
     double forwardAxis = controller.getRawAxis(3) - controller.getRawAxis(2);
 
@@ -165,21 +188,17 @@ public class Robot extends TimedRobot {
 
     if (controller.getRawButton(6)) {
       turningFlag = true;
-      turnTargetAngle = navx.getAngle() + 90;
+      turningController.setTarget(navx.getAngle() + 90);
     } else
 
     if (controller.getRawButton(5)) {
       turningFlag = true;
-      turnTargetAngle = navx.getAngle() - 90;
+      turningController.setTarget(navx.getAngle() - 90);
     } else
 
     if (turningFlag) {
 
-      double speed = turningController.getValue(turnTargetAngle - navx.getAngle());
-
-      // speed = Math.max(0.2, speed);
-
-      SmartDashboard.putNumber("speed", speed);
+      double speed = turningController.getValue(navx.getAngle());
 
       radialDrive.radialDrive(0, speed, false);
 
@@ -191,27 +210,25 @@ public class Robot extends TimedRobot {
       radialDrive.radialDrive(radius, forwardAxis);
     }
 
-    SmartDashboard.putNumber("left encoder", motorSetup.getLeftEncoderInches());
-    SmartDashboard.putNumber("right encoder", motorSetup.getRightEncoderInches());
-    SmartDashboard.putNumber("heading", navx.getAngle() - startingAngle);
     SmartDashboard.putBoolean("turning", turningFlag);
 
-    SmartDashboard.putNumber("encoder factor", motorSetup.getRightCanEncoder().getPositionConversionFactor());
-
-    if (controller.getRawButton(4)) {
-      radialDrive.radialDrive(RadialDrive.STRAIGHT_RADIUS, 0.075);
-    }
+    /*
+     * if (controller.getRawButton(4)) {
+     * radialDrive.radialDrive(RadialDrive.STRAIGHT_RADIUS, 0.075); }
+     */
 
   }
 
   /** This function is called once when the robot is disabled. */
   @Override
   public void disabledInit() {
+
   }
 
   /** This function is called periodically when disabled. */
   @Override
   public void disabledPeriodic() {
+
   }
 
   /** This function is called once when test mode is enabled. */
