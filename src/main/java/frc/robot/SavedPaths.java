@@ -2,14 +2,11 @@ package frc.robot;
 
 public class SavedPaths {
 
-    public static Path.Segment[] MAIN = new Path.Segment[] {
-        new Path.Segment(0, 120),
-        new Path.Segment(90, 60),
-        new Path.Segment(0, 80),
-        new Path.Segment(-90, 90),
-        new Path.Segment(-180, 200),
-        new Path.Segment(-270, 30),
-        new Path.Segment(-360, 0)
+    public static ContinuousPath.Segment[] MAIN = new ContinuousPath.Segment[] {
+        ContinuousPath.Segment.straight(120),
+        ContinuousPath.Segment.turn(360, 30),
+        ContinuousPath.Segment.straight(90),
+        ContinuousPath.Segment.turn(45, 30)
     };
 
 }

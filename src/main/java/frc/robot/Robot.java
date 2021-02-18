@@ -39,21 +39,25 @@ public class Robot extends TimedRobot {
 
   private boolean turningFlag = false;
 
-  private PIDController turningController = new PIDController(0.01, 0, 0.0011);
-  private PIDController driveController = new PIDController(0.019, 0, 0);
+  private PIDController turningController = new PIDController(0.015, 0, 0.0031);
+  private PIDController driveController = new PIDController(0.019, 0, 0.003);
 
   private Path path = new Path(motorSetup, navx, turningController, driveController, radialDrive);
+
+  private ContinuousPath continuousPath = new ContinuousPath(motorSetup, navx, turningController, driveController, radialDrive);
 
   public Robot() {
     turningController.setMin(-0.6);
     turningController.setMax(0.6);
-    turningController.setErrorThreshold(5);
+    turningController.setTargetDetection(5, 20);
 
     driveController.setMin(-0.6);
     driveController.setMax(0.6);
-    driveController.setErrorThreshold(1);
+    driveController.setTargetDetection(5, 20);
 
     path.addSegments(GeneratedPath.MAIN);
+    continuousPath.addSegments(SavedPaths.MAIN);
+  
   }
 
   /**
@@ -63,9 +67,9 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
 
-    SmartDashboard.putNumber("Kp", 0.01);
-    SmartDashboard.putNumber("Ki", 0);
-    SmartDashboard.putNumber("Kd", 0.0011);
+    SmartDashboard.putNumber("Kp", turningController.getKp());
+    SmartDashboard.putNumber("Ki", turningController.getKi());
+    SmartDashboard.putNumber("Kd", turningController.getKd());
 
   }
 
@@ -124,7 +128,8 @@ public class Robot extends TimedRobot {
     motorSetup.getLeftCanEncoder().setPosition(0);
     motorSetup.getRightCanEncoder().setPosition(0);
 
-    path.initDrive();
+    //path.initDrive();
+    continuousPath.initDrive();
 
   }
 
@@ -132,7 +137,8 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousPeriodic() {
 
-    path.autoDrive();
+    //path.autoDrive();
+    continuousPath.autoDrive();
 
     /*
      * double speed = driveController.getValue(120 -
@@ -198,7 +204,7 @@ public class Robot extends TimedRobot {
 
     if (turningFlag) {
 
-      double speed = turningController.getValue(navx.getAngle());
+      double speed = turningController.getControlOutput(navx.getAngle());
 
       radialDrive.radialDrive(0, speed, false);
 

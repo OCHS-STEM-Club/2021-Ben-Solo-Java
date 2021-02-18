@@ -60,7 +60,7 @@ public class Path {
 
             SmartDashboard.putNumber("turn error", turningController.getTarget() - navx.getAngle());
 
-            drive.radialDrive(0, turningController.getValue(navx.getAngle()), false);
+            drive.radialDrive(0, turningController.getControlOutput(navx.getAngle()), false);
 
             if (turningController.atTarget()) {
                 turning = false;
@@ -70,7 +70,7 @@ public class Path {
 
         } else {
 
-            drive.radialDrive(RadialDrive.STRAIGHT_RADIUS, driveController.getValue(motorSetup.getLeftEncoderInches()),
+            drive.radialDrive(RadialDrive.STRAIGHT_RADIUS, driveController.getControlOutput(motorSetup.getLeftEncoderInches()),
                     false);
 
             if (driveController.atTarget()) {
