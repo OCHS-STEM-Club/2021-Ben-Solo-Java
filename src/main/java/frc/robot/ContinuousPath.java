@@ -12,16 +12,20 @@ public class ContinuousPath {
     private int step = 0;
 
     private RadialDrive drive;
-    private PIDController turningController, driveController;
+    private PIDController turningController, driveController, radiusController;
     private BenSoloMotorSetup motorSetup;
     private AHRS navx;
     private double lastSign = 0;
+    private double speed = 0.25;
+
+    private StringBuilder s = new StringBuilder();
 
     public ContinuousPath(BenSoloMotorSetup motorSetup, AHRS navx, PIDController turningController,
-            PIDController driveController, RadialDrive drive) {
+            PIDController driveController, PIDController radiusController, RadialDrive drive) {
         this.motorSetup = motorSetup;
-        this.turningController = turningController;
-        this.driveController = driveController;
+        // this.turningController = turningController;
+        // this.driveController = driveController;
+        this.radiusController = radiusController;
         this.navx = navx;
         this.drive = drive;
     }
@@ -45,9 +49,10 @@ public class ContinuousPath {
 
             Segment first = segments.get(0);
 
-            if(first.isTurning()) {
+            if (first.isTurning()) {
 
                 lastSign = Math.signum(first.getTarget() - navx.getAngle());
+                radiusController.setTarget(first.getTarget());
 
             } else {
 
@@ -64,6 +69,8 @@ public class ContinuousPath {
         // SmartDashboard.putString("turn info", String.format("step: %d, turning: %b",
         // step, turning));
 
+        SmartDashboard.putNumber("lastSign", lastSign);
+
         if (step >= segments.size()) {
             drive.radialDrive(0, 0);
             return;
@@ -73,16 +80,28 @@ public class ContinuousPath {
 
         if (segment.isTurning()) {
 
-            SmartDashboard.putNumber("turn error", turningController.getTarget() - navx.getAngle());
+            // SmartDashboard.putNumber("turn error", turningController.getTarget() -
+            // navx.getAngle());
 
-            drive.radialDrive(segment.getRadius(), 0.25, false);
+            drive.radialDrive(segment.getRadius(), speed, false);
 
-            double currSign = Math.signum(segment.getTarget() - navx.getAngle());
+            double err = segment.getTarget() - navx.getAngle();
+
+            double currSign = Math.signum(err);
+
+            SmartDashboard.putNumber("currSign", currSign);
+            SmartDashboard.putBoolean("sign change", currSign != lastSign);
+
+            // String out = String.format("last: %d, curr: %d\n", (int)lastSign,
+            // (int)currSign);
+
+            // s.append(out);
+
+            // System.out.print(out);
+
+            // SmartDashboard.putString("sign log", s.toString());
 
             if (currSign != lastSign) {
-                
-                motorSetup.getLeftCanEncoder().setPosition(0);
-                motorSetup.getRightCanEncoder().setPosition(0);
 
                 step++;
 
@@ -90,31 +109,35 @@ public class ContinuousPath {
 
                     Segment next = segments.get(step);
 
-                    if(next.isTurning()) {
-        
+                    if (next.isTurning()) {
+
                         lastSign = Math.signum(next.getTarget() - navx.getAngle());
-        
+                        radiusController.setTarget(next.getTarget());
+
                     } else {
-        
-                        lastSign = Math.signum(next.getTarget() - motorSetup.getLeftEncoderInches());
-        
+
+                        motorSetup.getLeftCanEncoder().setPosition(0);
+                        motorSetup.getRightCanEncoder().setPosition(0);
+
+                        lastSign = Math.signum(next.getTarget() - 0);
+
                     }
 
                 }
 
             } else {
+
                 lastSign = currSign;
+
             }
-
-        
-
-            
 
         } else {
 
-            drive.radialDrive(RadialDrive.STRAIGHT_RADIUS, 0.25, false);
+            drive.radialDrive(radiusController.getControlOutput(navx.getAngle()), speed, false);
 
-            double currSign = Math.signum(segment.getTarget() - motorSetup.getLeftEncoderInches());
+            double err = segment.getTarget() - motorSetup.getLeftEncoderInches();
+
+            double currSign = Math.signum(err);
 
             if (currSign != lastSign) {
 
@@ -124,20 +147,26 @@ public class ContinuousPath {
 
                     Segment next = segments.get(step);
 
-                    if(next.isTurning()) {
-        
+                    if (next.isTurning()) {
+
                         lastSign = Math.signum(next.getTarget() - navx.getAngle());
-        
+                        radiusController.setTarget(next.getTarget());
+
                     } else {
-        
-                        lastSign = Math.signum(next.getTarget() - motorSetup.getLeftEncoderInches());
-        
+
+                        motorSetup.getLeftCanEncoder().setPosition(0);
+                        motorSetup.getRightCanEncoder().setPosition(0);
+
+                        lastSign = Math.signum(next.getTarget() - 0);
+
                     }
 
                 }
 
             } else {
+
                 lastSign = currSign;
+
             }
 
         }

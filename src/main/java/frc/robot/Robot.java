@@ -6,6 +6,7 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 
+import com.ctre.phoenix.Util;
 import com.kauailabs.navx.frc.AHRS;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
@@ -41,12 +42,15 @@ public class Robot extends TimedRobot {
 
   private PIDController turningController = new PIDController(0.015, 0, 0.0031);
   private PIDController driveController = new PIDController(0.019, 0, 0.003);
+  private PIDController radiusController = new PIDController(0.7, 0, 0.2);
 
   private Path path = new Path(motorSetup, navx, turningController, driveController, radialDrive);
 
-  private ContinuousPath continuousPath = new ContinuousPath(motorSetup, navx, turningController, driveController, radialDrive);
+  private ContinuousPath continuousPath = new ContinuousPath(motorSetup, navx, turningController, driveController,
+      radiusController, radialDrive);
 
   public Robot() {
+
     turningController.setMin(-0.6);
     turningController.setMax(0.6);
     turningController.setTargetDetection(5, 20);
@@ -55,9 +59,13 @@ public class Robot extends TimedRobot {
     driveController.setMax(0.6);
     driveController.setTargetDetection(5, 20);
 
+    radiusController.setMin(-0.75);
+    radiusController.setMax(0.75);
+    // driveController.setTargetDetection(5, 20);
+
     path.addSegments(GeneratedPath.MAIN);
     continuousPath.addSegments(SavedPaths.MAIN);
-  
+
   }
 
   /**
@@ -67,9 +75,14 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
 
-    SmartDashboard.putNumber("Kp", turningController.getKp());
-    SmartDashboard.putNumber("Ki", turningController.getKi());
-    SmartDashboard.putNumber("Kd", turningController.getKd());
+    // startingAngle = navx.getAngle();
+    // navx.setAngleAdjustment(-startingAngle);
+
+    navx.zeroYaw();
+
+    SmartDashboard.putNumber("Kp", radiusController.getKp());
+    SmartDashboard.putNumber("Ki", radiusController.getKi());
+    SmartDashboard.putNumber("Kd", radiusController.getKd());
 
   }
 
@@ -101,9 +114,22 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("right RPM", vRight);
     SmartDashboard.putNumber("LR RPM ratio", leftOverRight);
 
-    turningController.setKp(SmartDashboard.getNumber("Kp", 0));
-    turningController.setKi(SmartDashboard.getNumber("Ki", 0));
-    turningController.setKd(SmartDashboard.getNumber("Kd", 0));
+    radiusController.setKp(SmartDashboard.getNumber("Kp", 0));
+    radiusController.setKi(SmartDashboard.getNumber("Ki", 0));
+    radiusController.setKd(SmartDashboard.getNumber("Kd", 0));
+
+    if (controller.getRawButton(4)) {
+
+      // navx.setAngleAdjustment(-navx.getAngle());
+
+      // navx.reset();
+
+      navx.zeroYaw();
+
+      motorSetup.getLeftCanEncoder().setPosition(0);
+      motorSetup.getRightCanEncoder().setPosition(0);
+
+    }
 
   }
 
@@ -122,14 +148,17 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
 
-    startingAngle = navx.getAngle();
-    navx.setAngleAdjustment(-startingAngle);
+    // startingAngle = navx.getAngle();
+    // navx.setAngleAdjustment(-startingAngle);
+    navx.zeroYaw();
 
     motorSetup.getLeftCanEncoder().setPosition(0);
     motorSetup.getRightCanEncoder().setPosition(0);
 
-    //path.initDrive();
-    continuousPath.initDrive();
+    // path.initDrive();
+     continuousPath.initDrive();
+
+    //radiusController.setTarget(0);
 
   }
 
@@ -139,6 +168,15 @@ public class Robot extends TimedRobot {
 
     //path.autoDrive();
     continuousPath.autoDrive();
+
+   /* double output = radiusController.getControlOutput(navx.getAngle());
+
+    double radius = Utils.getRadius(output);
+
+    SmartDashboard.putNumber("radius", radius);
+    SmartDashboard.putNumber("turnOutput", output);
+
+    radialDrive.radialDrive(radius, 0.35, false);*/
 
     /*
      * double speed = driveController.getValue(120 -
@@ -153,8 +191,10 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopInit() {
 
-    startingAngle = navx.getAngle();
-    navx.setAngleAdjustment(-startingAngle);
+    // startingAngle = navx.getAngle();
+    // navx.setAngleAdjustment(-startingAngle);
+    navx.zeroYaw();
+
     turningFlag = false;
 
   }
@@ -163,11 +203,9 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
 
-    
-
     double forwardAxis = controller.getRawAxis(3) - controller.getRawAxis(2);
 
-    forwardAxis = Utils.scaleAxis(forwardAxis);
+    // forwardAxis = Utils.scaleAxis(forwardAxis);
 
     if (controller.getRawButton(1)) {
       forwardAxis = 0.5 * forwardAxis;
@@ -217,11 +255,6 @@ public class Robot extends TimedRobot {
     }
 
     SmartDashboard.putBoolean("turning", turningFlag);
-
-    /*
-     * if (controller.getRawButton(4)) {
-     * radialDrive.radialDrive(RadialDrive.STRAIGHT_RADIUS, 0.075); }
-     */
 
   }
 
