@@ -31,8 +31,7 @@ public class Robot extends TimedRobot {
 
   private XboxController controller = new XboxController(0);
 
-  private RadialDrive radialDrive = new RadialDrive(motorSetup.getLeftMotorController(),
-      motorSetup.getRightMotorController());
+  private RadialDrive radialDrive = new RadialDrive(motorSetup);
 
   private AHRS navx = new AHRS();
 
@@ -59,8 +58,8 @@ public class Robot extends TimedRobot {
     driveController.setMax(0.6);
     driveController.setTargetDetection(5, 20);
 
-    radiusController.setMin(-0.75);
-    radiusController.setMax(0.75);
+    radiusController.setMin(-0.85);
+    radiusController.setMax(0.85);
     // driveController.setTargetDetection(5, 20);
 
     path.addSegments(GeneratedPath.MAIN);
@@ -80,9 +79,9 @@ public class Robot extends TimedRobot {
 
     navx.zeroYaw();
 
-    SmartDashboard.putNumber("Kp", radiusController.getKp());
-    SmartDashboard.putNumber("Ki", radiusController.getKi());
-    SmartDashboard.putNumber("Kd", radiusController.getKd());
+    SmartDashboard.putNumber("Kp", radialDrive.getRelativeSpeedController().getKp());
+    SmartDashboard.putNumber("Ki", radialDrive.getRelativeSpeedController().getKi());
+    SmartDashboard.putNumber("Kd", radialDrive.getRelativeSpeedController().getKd());
 
   }
 
@@ -114,9 +113,9 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("right RPM", vRight);
     SmartDashboard.putNumber("LR RPM ratio", leftOverRight);
 
-    radiusController.setKp(SmartDashboard.getNumber("Kp", 0));
-    radiusController.setKi(SmartDashboard.getNumber("Ki", 0));
-    radiusController.setKd(SmartDashboard.getNumber("Kd", 0));
+    radialDrive.getRelativeSpeedController().setKp(SmartDashboard.getNumber("Kp", 0));
+    radialDrive.getRelativeSpeedController().setKi(SmartDashboard.getNumber("Ki", 0));
+    radialDrive.getRelativeSpeedController().setKd(SmartDashboard.getNumber("Kd", 0));
 
     if (controller.getRawButton(4)) {
 
@@ -150,13 +149,13 @@ public class Robot extends TimedRobot {
 
     // startingAngle = navx.getAngle();
     // navx.setAngleAdjustment(-startingAngle);
-    navx.zeroYaw();
+    // navx.zeroYaw();
 
     motorSetup.getLeftCanEncoder().setPosition(0);
     motorSetup.getRightCanEncoder().setPosition(0);
 
     // path.initDrive();
-     continuousPath.initDrive();
+    continuousPath.initDrive();
 
     //radiusController.setTarget(0);
 
@@ -166,17 +165,19 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousPeriodic() {
 
-    //path.autoDrive();
+    // path.autoDrive();
     continuousPath.autoDrive();
 
-   /* double output = radiusController.getControlOutput(navx.getAngle());
-
-    double radius = Utils.getRadius(output);
-
-    SmartDashboard.putNumber("radius", radius);
-    SmartDashboard.putNumber("turnOutput", output);
-
-    radialDrive.radialDrive(radius, 0.35, false);*/
+    
+      //double output = radiusController.getControlOutput(navx.getAngle());
+      
+      //double radius = Utils.getRadius(output);
+     
+      //SmartDashboard.putNumber("radius", radius);
+      //SmartDashboard.putNumber("turnOutput", output);
+      
+      //radialDrive.radialDrive(radius, 0.15, false);
+     
 
     /*
      * double speed = driveController.getValue(120 -

@@ -18,8 +18,6 @@ public class ContinuousPath {
     private double lastSign = 0;
     private double speed = 0.25;
 
-    private StringBuilder s = new StringBuilder();
-
     public ContinuousPath(BenSoloMotorSetup motorSetup, AHRS navx, PIDController turningController,
             PIDController driveController, PIDController radiusController, RadialDrive drive) {
         this.motorSetup = motorSetup;
@@ -57,6 +55,7 @@ public class ContinuousPath {
             } else {
 
                 lastSign = Math.signum(first.getTarget() - motorSetup.getLeftEncoderInches());
+                radiusController.setTarget(0);
 
             }
 
@@ -71,14 +70,18 @@ public class ContinuousPath {
 
         SmartDashboard.putNumber("lastSign", lastSign);
 
+        // stop at end
         if (step >= segments.size()) {
             drive.radialDrive(0, 0);
             return;
         }
 
+        // get current segment
         Segment segment = segments.get(step);
 
-        if (segment.isTurning()) {
+        SmartDashboard.putNumber("target angle", radiusController.getTarget());
+
+        if (segment.isTurning()) { // this segment is a turn
 
             // SmartDashboard.putNumber("turn error", turningController.getTarget() -
             // navx.getAngle());
@@ -131,9 +134,13 @@ public class ContinuousPath {
 
             }
 
-        } else {
+        } else { // this segment is not a turn
 
-            drive.radialDrive(radiusController.getControlOutput(navx.getAngle()), speed, false);
+            double output = radiusController.getControlOutput(navx.getAngle());
+
+            double radius = Utils.getRadius(output);
+
+            drive.radialDrive(radius, speed, false);
 
             double err = segment.getTarget() - motorSetup.getLeftEncoderInches();
 
