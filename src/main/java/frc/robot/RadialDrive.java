@@ -19,6 +19,11 @@ public class RadialDrive {
 
     private PIDController relativeSpeedController = new PIDController(0, 0, 0);
 
+    private RollingAverage ravg = new RollingAverage(10);
+    private RollingAverage lavg = new RollingAverage(10);
+    private RollingAverage avgRatio = new RollingAverage(25);
+
+
     public PIDController getRelativeSpeedController() {
         return relativeSpeedController;
     }
@@ -52,14 +57,19 @@ public class RadialDrive {
 
         double currentRatio = motorSetup.getLeftCanEncoder().getVelocity() / -motorSetup.getRightCanEncoder().getVelocity();
 
+        lavg.feed(motorSetup.getLeftCanEncoder().getVelocity());
+        ravg.feed(motorSetup.getRightCanEncoder().getVelocity());
+
+        avgRatio.feed(currentRatio);
+
         SmartDashboard.putNumber("target ratio", targetRatio);
         SmartDashboard.putNumber("current ratio", currentRatio);
 
         relativeSpeedController.setTarget(targetRatio);
 
-        double output = relativeSpeedController.getControlOutput(currentRatio);
+        double output = relativeSpeedController.getControlOutput(avgRatio.avg());
 
-        if(Double.isNaN(targetRatio)) {
+        if(Double.isNaN(targetRatio) || Math.abs(radius) > 250) {
             output = rightSpeedFactor;
         }
 
@@ -68,6 +78,15 @@ public class RadialDrive {
             rightSpeedFactor *= SPEED_LIMIT;
             output *= SPEED_LIMIT;
         }
+
+        
+
+        //SmartDashboard.putNumber("left avg", lavg.avg());
+        //SmartDashboard.putNumber("right avg", ravg.avg());
+        SmartDashboard.putNumber("avg ratio", avgRatio.avg());
+
+        SmartDashboard.putNumber("radius", radius);
+
 
         SmartDashboard.putNumber("left speed", leftSpeedFactor);
         SmartDashboard.putNumber("right speed", rightSpeedFactor);

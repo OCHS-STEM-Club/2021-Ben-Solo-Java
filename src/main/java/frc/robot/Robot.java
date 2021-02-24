@@ -39,31 +39,31 @@ public class Robot extends TimedRobot {
 
   private boolean turningFlag = false;
 
-  private PIDController turningController = new PIDController(0.015, 0, 0.0031);
-  private PIDController driveController = new PIDController(0.019, 0, 0.003);
-  private PIDController radiusController = new PIDController(0.7, 0, 0.2);
+  private PIDController turningController = new PIDController(0.017, 0, 0.0035);
+  private PIDController driveController = new PIDController(0.019, 0, 0.0025);
+  private PIDController radiusController = new PIDController(0.65, 0, 0.2);
 
-  private Path path = new Path(motorSetup, navx, turningController, driveController, radialDrive);
+  private Path path = new Path(motorSetup, navx, turningController, driveController, radiusController, radialDrive);
 
   private ContinuousPath continuousPath = new ContinuousPath(motorSetup, navx, turningController, driveController,
       radiusController, radialDrive);
 
   public Robot() {
 
-    turningController.setMin(-0.6);
-    turningController.setMax(0.6);
-    turningController.setTargetDetection(5, 20);
+    turningController.setMin(-1);
+    turningController.setMax(1);
+    turningController.setTargetDetection(5, 10);
 
-    driveController.setMin(-0.6);
-    driveController.setMax(0.6);
+    driveController.setMin(-1);
+    driveController.setMax(1);
     driveController.setTargetDetection(5, 20);
 
-    radiusController.setMin(-0.85);
-    radiusController.setMax(0.85);
+    radiusController.setMin(-0.8);
+    radiusController.setMax(0.8);
     // driveController.setTargetDetection(5, 20);
 
     path.addSegments(GeneratedPath.MAIN);
-    continuousPath.addSegments(SavedPaths.MAIN);
+    //continuousPath.addSegments(SavedPaths.MAIN);
 
   }
 
@@ -154,8 +154,8 @@ public class Robot extends TimedRobot {
     motorSetup.getLeftCanEncoder().setPosition(0);
     motorSetup.getRightCanEncoder().setPosition(0);
 
-    // path.initDrive();
-    continuousPath.initDrive();
+     path.initDrive();
+    //continuousPath.initDrive();
 
     //radiusController.setTarget(0);
 
@@ -165,8 +165,8 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousPeriodic() {
 
-    // path.autoDrive();
-    continuousPath.autoDrive();
+    path.autoDrive();
+    //continuousPath.autoDrive();
 
     
       //double output = radiusController.getControlOutput(navx.getAngle());

@@ -13,15 +13,16 @@ public class Path {
     private boolean turning = true;
 
     private RadialDrive drive;
-    private PIDController turningController, driveController;
+    private PIDController turningController, driveController, radiusController;
     private BenSoloMotorSetup motorSetup;
     private AHRS navx;
 
-    public Path(BenSoloMotorSetup motorSetup, AHRS navx, PIDController turningController, PIDController driveController,
+    public Path(BenSoloMotorSetup motorSetup, AHRS navx, PIDController turningController, PIDController driveController, PIDController radiusController,
             RadialDrive drive) {
         this.motorSetup = motorSetup;
         this.turningController = turningController;
         this.driveController = driveController;
+        this.radiusController = radiusController;
         this.navx = navx;
         this.drive = drive;
     }
@@ -42,6 +43,7 @@ public class Path {
         if (step < segments.size()) {
             turningController.setTarget(segments.get(step).getHeadingDegrees());
             driveController.setTarget(segments.get(step).getDistanceInches());
+            radiusController.setTarget(segments.get(step).getHeadingDegrees());
         }
 
     }
@@ -71,7 +73,11 @@ public class Path {
 
         } else {
 
-            drive.radialDrive(RadialDrive.STRAIGHT_RADIUS, driveController.getControlOutput(motorSetup.getLeftEncoderInches()),
+            double output = radiusController.getControlOutput(navx.getAngle());
+
+            double radius = Utils.getRadius(output);
+
+            drive.radialDrive(radius, driveController.getControlOutput(motorSetup.getLeftEncoderInches()),
                     false);
 
             if (driveController.atTarget()) {
@@ -82,6 +88,7 @@ public class Path {
                 if (step < segments.size()) {
                     turningController.setTarget(segments.get(step).getHeadingDegrees());
                     driveController.setTarget(segments.get(step).getDistanceInches());
+                    radiusController.setTarget(segments.get(step).getHeadingDegrees());
 
                 }
 

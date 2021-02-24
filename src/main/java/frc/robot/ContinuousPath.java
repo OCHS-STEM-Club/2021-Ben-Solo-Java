@@ -16,7 +16,7 @@ public class ContinuousPath {
     private BenSoloMotorSetup motorSetup;
     private AHRS navx;
     private double lastSign = 0;
-    private double speed = 0.25;
+    private double speed = 0.15;
 
     public ContinuousPath(BenSoloMotorSetup motorSetup, AHRS navx, PIDController turningController,
             PIDController driveController, PIDController radiusController, RadialDrive drive) {
