@@ -13,28 +13,28 @@ public class RadialDrive {
 
     public static final double SPEED_LIMIT = 0.6;
 
-    private double RADIUS_SCALE_FACTOR = 1;
-
     private SpeedController leftGroup, rightGroup;
     private BenSoloMotorSetup motorSetup;
 
-    private PIDController relativeSpeedController = new PIDController(0, 0, 0);
+    private PIDController leftInchesPerSecondController = new PIDController(0.2, 0, 0.01);
+    private PIDController rightInchesPerSecondController = new PIDController(0.2, 0, 0.01);
 
-    private RollingAverage ravg = new RollingAverage(10);
-    private RollingAverage lavg = new RollingAverage(10);
-    private RollingAverage avgRatio = new RollingAverage(25);
+    RollingAverage la = new RollingAverage(10);
+    RollingAverage ra = new RollingAverage(10);
 
-    public PIDController getRelativeSpeedController() {
-        return relativeSpeedController;
-    }
+    double loff, roff;
+
 
     public RadialDrive(BenSoloMotorSetup motorSetup) {
         this.motorSetup = motorSetup;
         this.leftGroup = motorSetup.getLeftMotorController();
         this.rightGroup = motorSetup.getRightMotorController();
 
-        relativeSpeedController.setMax(1);
-        relativeSpeedController.setMin(-1);
+        leftInchesPerSecondController.setMin(-10);
+        leftInchesPerSecondController.setMax(10);
+        rightInchesPerSecondController.setMin(-10);
+        rightInchesPerSecondController.setMax(10);
+
     }
 
     public void radialDrive(boolean left, double radius, double forwardAxis) {
@@ -64,79 +64,201 @@ public class RadialDrive {
         }
 
         if (left) {
-            //swapping the left and right prop values to turn left
+            // swapping the left and right prop values to turn left
             double tempLeftProp = leftProp;
-            leftProp= rightProp;
-            rightProp= tempLeftProp;
+            leftProp = rightProp;
+            rightProp = tempLeftProp;
         }
-
-    
 
         leftGroup.set(leftProp);
         rightGroup.set(-rightProp);
 
     }
 
-  /*  public void radialDrive(double radius, double forwardAxis, boolean limit) {
-        radialDrive(false, radius, forwardAxis, limit);
-    }
-    */
-/*
-    public void radialDrive(double radius, double forwardAxis, boolean limit) {
-
-        radius *= RADIUS_SCALE_FACTOR;
-
-        double absRaidus = Math.abs(radius);
-
-        double turnScale = forwardAxis * (ROBOT_WIDTH / 2) / ((ROBOT_WIDTH / 2) + absRaidus);
-        double forwardScale = -forwardAxis * (-(ROBOT_WIDTH / 2) / ((ROBOT_WIDTH / 2) + absRaidus) + 1);
-
-        double leftSpeedFactor = -Utils.sign(radius) * (turnScale) + forwardScale;
-        double rightSpeedFactor = Utils.sign(radius) * (turnScale) + forwardScale;
-
-        double targetRatio = leftSpeedFactor / rightSpeedFactor;
-
-        double currentRatio = motorSetup.getLeftCanEncoder().getVelocity()
-                / -motorSetup.getRightCanEncoder().getVelocity();
-
-        lavg.feed(motorSetup.getLeftCanEncoder().getVelocity());
-        ravg.feed(motorSetup.getRightCanEncoder().getVelocity());
-
-        avgRatio.feed(currentRatio);
-
-        SmartDashboard.putNumber("target ratio", targetRatio);
-        SmartDashboard.putNumber("current ratio", currentRatio);
-
-        relativeSpeedController.setTarget(targetRatio);
-
-        double output = relativeSpeedController.getControlOutput(avgRatio.avg());
-
-        if (Double.isNaN(targetRatio) || Math.abs(radius) > 250) {
-            output = rightSpeedFactor;
+    public void setIPSTarget(boolean left, double radius, double inchesPerSecond) {
+        if (radius < 0) {
+            System.out.println("Radius cannot be negative: " + radius);
         }
 
-        if (limit) {
-            leftSpeedFactor *= SPEED_LIMIT;
-            rightSpeedFactor *= SPEED_LIMIT;
-            output *= SPEED_LIMIT;
+        radius = Math.abs(radius);
+
+        double leftPos = -ROBOT_WIDTH / 2;
+        double rightPos = ROBOT_WIDTH / 2;
+        double leftProp = radius - leftPos;
+        double rightProp = radius - rightPos;
+        double max = Math.max(Math.abs(leftProp), Math.abs(rightProp));
+        leftProp /= max;
+        rightProp /= max;
+
+        if (left) {
+            // swapping the left and right prop values to turn left
+            double tempLeftProp = leftProp;
+            leftProp = rightProp;
+            rightProp = tempLeftProp;
         }
 
-        // SmartDashboard.putNumber("left avg", lavg.avg());
-        // SmartDashboard.putNumber("right avg", ravg.avg());
-        SmartDashboard.putNumber("avg ratio", avgRatio.avg());
+        double leftInchesPerSecond = leftProp * inchesPerSecond;
+        double rightInchesPerSecond = rightProp * inchesPerSecond;
 
-        SmartDashboard.putNumber("radius", radius);
+        loff = leftInchesPerSecond;
+        roff = rightInchesPerSecond;
 
-        SmartDashboard.putNumber("left speed", leftSpeedFactor);
-        SmartDashboard.putNumber("right speed", rightSpeedFactor);
-        SmartDashboard.putNumber("output speed", output);
-
-        leftGroup.set(-leftSpeedFactor);
-        rightGroup.set(rightSpeedFactor);
-        // rightGroup.set(output);
-
+        leftInchesPerSecondController.setTarget(leftInchesPerSecond);
+        rightInchesPerSecondController.setTarget(rightInchesPerSecond);
     }
 
-    */
+    public void radialDriveInchesPerSecond(boolean left, double radius, double inchesPerSecond) {
+        if (radius < 0) {
+            System.out.println("Radius cannot be negative: " + radius);
+        }
+
+        radius = Math.abs(radius);
+
+        double leftPos = -ROBOT_WIDTH / 2;
+        double rightPos = ROBOT_WIDTH / 2;
+        double leftProp = radius - leftPos;
+        double rightProp = radius - rightPos;
+        double max = Math.max(Math.abs(leftProp), Math.abs(rightProp));
+        leftProp /= max;
+        rightProp /= max;
+
+        if (left) {
+            // swapping the left and right prop values to turn left
+            double tempLeftProp = leftProp;
+            leftProp = rightProp;
+            rightProp = tempLeftProp;
+        }
+
+        double leftInchesPerSecond = leftProp * inchesPerSecond;
+        double rightInchesPerSecond = rightProp * inchesPerSecond;
+
+        leftInchesPerSecondController.setTarget(leftInchesPerSecond);
+        rightInchesPerSecondController.setTarget(rightInchesPerSecond);
+
+        double currLeftIPS = motorSetup.getLeftVelocityInchesPerSecond();
+        double currRightIPS = -motorSetup.getRightVelocityInchesPerSecond();
+
+        la.feed(currLeftIPS);
+        ra.feed(currRightIPS);
+
+        double leftOutput = leftInchesPerSecondController.getControlOutput(la.avg());
+        double rightOutput = rightInchesPerSecondController.getControlOutput(ra.avg());
+
+        SmartDashboard.putNumber("leftOut", leftOutput);
+        SmartDashboard.putNumber("rightOut", rightOutput);
+
+        SmartDashboard.putString("leftIPS", String.format("target: %f, current: %f", leftInchesPerSecond, currLeftIPS));
+        SmartDashboard.putString("rightIPS", String.format("target: %f, current: %f", rightInchesPerSecond, currRightIPS));
+
+        double vLeft = inchesPerSecond/17.6 * leftProp + leftOutput;
+        double vRight = inchesPerSecond/17.6 * rightProp + rightOutput;
+
+        SmartDashboard.putNumber("left voltage", vLeft);
+        SmartDashboard.putNumber("right voltage", vRight);
+
+        // 0V = 0 in/s
+        // 1V = 13.5 in/s
+        // 1.8V = 30 in/s
+        // 2.5V = 44 in/s
+        // 3.6V = 66.5 in/s
+        // 5V = 95 in/s
+
+        // in/s = 17.6(V)
+        leftGroup.setVoltage(vLeft); 
+        rightGroup.setVoltage(-vRight); 
+    }
+
+    public void radialDriveTarget() {
+        
+        double currLeftIPS = motorSetup.getLeftVelocityInchesPerSecond();
+        double currRightIPS = -motorSetup.getRightVelocityInchesPerSecond();
+
+        la.feed(currLeftIPS);
+        ra.feed(currRightIPS);
+
+        double leftOutput = leftInchesPerSecondController.getControlOutput(la.avg());
+        double rightOutput = rightInchesPerSecondController.getControlOutput(ra.avg());
+
+        SmartDashboard.putNumber("leftOut", leftOutput);
+        SmartDashboard.putNumber("rightOut", rightOutput);
+
+        //SmartDashboard.putString("leftIPS", String.format("target: %f, current: %f", leftInchesPerSecond, currLeftIPS));
+        //SmartDashboard.putString("rightIPS", String.format("target: %f, current: %f", rightInchesPerSecond, currRightIPS));
+
+        double vLeft = loff/17.6 + leftOutput;
+        double vRight = roff/17.6 + rightOutput;
+
+        SmartDashboard.putNumber("left voltage", vLeft);
+        SmartDashboard.putNumber("right voltage", vRight);
+
+        // 0V = 0 in/s
+        // 1V = 13.5 in/s
+        // 1.8V = 30 in/s
+        // 2.5V = 44 in/s
+        // 3.6V = 66.5 in/s
+        // 5V = 95 in/s
+
+        // in/s = 17.6(V)
+        leftGroup.setVoltage(vLeft); 
+        rightGroup.setVoltage(-vRight); 
+    }
+
+    /*
+     * public void radialDrive(double radius, double forwardAxis, boolean limit) {
+     * radialDrive(false, radius, forwardAxis, limit); }
+     */
+    /*
+     * public void radialDrive(double radius, double forwardAxis, boolean limit) {
+     * 
+     * radius *= RADIUS_SCALE_FACTOR;
+     * 
+     * double absRaidus = Math.abs(radius);
+     * 
+     * double turnScale = forwardAxis * (ROBOT_WIDTH / 2) / ((ROBOT_WIDTH / 2) +
+     * absRaidus); double forwardScale = -forwardAxis * (-(ROBOT_WIDTH / 2) /
+     * ((ROBOT_WIDTH / 2) + absRaidus) + 1);
+     * 
+     * double leftSpeedFactor = -Utils.sign(radius) * (turnScale) + forwardScale;
+     * double rightSpeedFactor = Utils.sign(radius) * (turnScale) + forwardScale;
+     * 
+     * double targetRatio = leftSpeedFactor / rightSpeedFactor;
+     * 
+     * double currentRatio = motorSetup.getLeftCanEncoder().getVelocity() /
+     * -motorSetup.getRightCanEncoder().getVelocity();
+     * 
+     * lavg.feed(motorSetup.getLeftCanEncoder().getVelocity());
+     * ravg.feed(motorSetup.getRightCanEncoder().getVelocity());
+     * 
+     * avgRatio.feed(currentRatio);
+     * 
+     * SmartDashboard.putNumber("target ratio", targetRatio);
+     * SmartDashboard.putNumber("current ratio", currentRatio);
+     * 
+     * relativeSpeedController.setTarget(targetRatio);
+     * 
+     * double output = relativeSpeedController.getControlOutput(avgRatio.avg());
+     * 
+     * if (Double.isNaN(targetRatio) || Math.abs(radius) > 250) { output =
+     * rightSpeedFactor; }
+     * 
+     * if (limit) { leftSpeedFactor *= SPEED_LIMIT; rightSpeedFactor *= SPEED_LIMIT;
+     * output *= SPEED_LIMIT; }
+     * 
+     * // SmartDashboard.putNumber("left avg", lavg.avg()); //
+     * SmartDashboard.putNumber("right avg", ravg.avg());
+     * SmartDashboard.putNumber("avg ratio", avgRatio.avg());
+     * 
+     * SmartDashboard.putNumber("radius", radius);
+     * 
+     * SmartDashboard.putNumber("left speed", leftSpeedFactor);
+     * SmartDashboard.putNumber("right speed", rightSpeedFactor);
+     * SmartDashboard.putNumber("output speed", output);
+     * 
+     * leftGroup.set(-leftSpeedFactor); rightGroup.set(rightSpeedFactor); //
+     * rightGroup.set(output);
+     * 
+     * }
+     * 
+     */
 
 }

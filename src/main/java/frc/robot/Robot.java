@@ -40,11 +40,11 @@ public class Robot extends TimedRobot {
 
   private boolean turningFlag = false;
 
-  private PIDController turningController = new PIDController(0.015, 0, 0.0033);
+  private PIDController turningController = new PIDController(0.0095, 0, 0.00035);
   private PIDController driveController = new PIDController(0.019, 0, 0.0025);
   private PIDController radiusController = new PIDController(0.55, 0, 0.2);
 
-  private PIDController smartDashboadController = radiusController;
+  private PIDController smartDashboadController = turningController;
 
   
 
@@ -161,8 +161,11 @@ public class Robot extends TimedRobot {
     motorSetup.getLeftCanEncoder().setPosition(0);
     motorSetup.getRightCanEncoder().setPosition(0);
 
-     path.initDrive();
+    path.initDrive();
     //continuousPath.initDrive();
+
+    //radialDrive.setIPSTarget(false, 24, 30);
+
 
     //radiusController.setTarget(0);
 
@@ -173,6 +176,9 @@ public class Robot extends TimedRobot {
   public void autonomousPeriodic() {
 
     path.autoDrive();
+
+    //radialDrive.radialDriveTarget();
+
     //continuousPath.autoDrive();
 
     
@@ -237,8 +243,7 @@ public class Robot extends TimedRobot {
       motorSetup.getLeftCanEncoder().setPosition(0);
       motorSetup.getRightCanEncoder().setPosition(0);
     }
-
-    radialDrive.radialDrive(left, radius, forwardAxis, true);
+    radialDrive.radialDrive(left, radius, forwardAxis);
 /*
     if (controller.getRawButton(3)) {
       turningFlag = false;
@@ -277,6 +282,8 @@ public class Robot extends TimedRobot {
   /** This function is called once when the robot is disabled. */
   @Override
   public void disabledInit() {
+
+    radialDrive.radialDrive(false, 0, 0);
 
   }
 

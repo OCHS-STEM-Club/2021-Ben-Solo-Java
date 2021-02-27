@@ -63,14 +63,19 @@ public class Path {
 
         if (turning) {
 
-            SmartDashboard.putNumber("turn error", turningController.getTarget() - navx.getAngle());
+            double turnError = turningController.getTarget() - navx.getAngle();
 
-            boolean left = turningController.getTarget() - navx.getAngle() > 0;
+            SmartDashboard.putNumber("turn error",  turnError);
+
+            double turnSpeed = turningController.getControlOutput(navx.getAngle());
+
+            boolean left = turnSpeed < 0;
 
             SmartDashboard.putBoolean("turn left", left);
+            SmartDashboard.putNumber("turn speed",  turnSpeed);
 
             // TODO: fix negative radius
-            drive.radialDrive(left, 0, turningController.getControlOutput(navx.getAngle()), false);
+            drive.radialDrive(left, 0, Math.abs(turnSpeed), false);
 
             if (turningController.atTarget()) {
                 turning = false;
@@ -97,7 +102,6 @@ public class Path {
                     turningController.setTarget(segments.get(step).getHeadingDegrees());
                     driveController.setTarget(segments.get(step).getDistanceInches());
                     radiusController.setTarget(segments.get(step).getHeadingDegrees());
-
                 }
 
             }
