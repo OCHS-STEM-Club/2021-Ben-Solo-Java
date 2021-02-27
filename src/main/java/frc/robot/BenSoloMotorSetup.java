@@ -20,6 +20,7 @@ public class BenSoloMotorSetup extends DriveMotorSetup {
     private CANEncoder leftCanEncoder = driveMotorLeft.getEncoder();
     private CANEncoder rightCanEncoder = driveMotorRight.getEncoder();
     private static final double GEAR_RATIO = (60d / 11d) * (50d / 38d);
+    private static final double WHEEL_DIAMETER = 6; // inches
 
     public BenSoloMotorSetup() {
 
@@ -42,8 +43,13 @@ public class BenSoloMotorSetup extends DriveMotorSetup {
         slaveMotorLeft2.setOpenLoopRampRate(0.35);
         slaveMotorRight2.setOpenLoopRampRate(0.35);
 
-        CANError lerr = leftCanEncoder.setPositionConversionFactor(1 / GEAR_RATIO * 6 * Math.PI);
-        CANError rerr = rightCanEncoder.setPositionConversionFactor(1 / GEAR_RATIO * 6 * Math.PI);
+        // Convert position output from rotations to inches
+        CANError lerr = leftCanEncoder.setPositionConversionFactor(1 / GEAR_RATIO * WHEEL_DIAMETER * Math.PI);
+        CANError rerr = rightCanEncoder.setPositionConversionFactor(1 / GEAR_RATIO * WHEEL_DIAMETER * Math.PI);
+
+        // convert from RPM to inches per seccond
+        CANError lerr2 = leftCanEncoder.setVelocityConversionFactor(1 / GEAR_RATIO * WHEEL_DIAMETER * Math.PI / 60);
+        CANError rerr2 = rightCanEncoder.setVelocityConversionFactor(1 / GEAR_RATIO * WHEEL_DIAMETER * Math.PI / 60);
 
         SmartDashboard.putBoolean("encoder conversion error", lerr != CANError.kOk || rerr != CANError.kOk);
 
@@ -68,14 +74,24 @@ public class BenSoloMotorSetup extends DriveMotorSetup {
     }
 
     @Override
-    public double getLeftEncoderInches() {
+    public double getLeftPositionInches() {
         return leftCanEncoder.getPosition();
 
     }
 
     @Override
-    public double getRightEncoderInches() {
+    public double getRightPositionInches() {
         return rightCanEncoder.getPosition();
+    }
+
+    @Override
+    public double getLeftVelocityInchesPerSecond() {
+        return leftCanEncoder.getVelocity();
+    }
+
+    @Override
+    public double getRightVelocityInchesPerSecond() {
+        return rightCanEncoder.getVelocity();
     }
 
 }

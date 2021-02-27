@@ -54,7 +54,7 @@ public class ContinuousPath {
 
             } else {
 
-                lastSign = Math.signum(first.getTarget() - motorSetup.getLeftEncoderInches());
+                lastSign = Math.signum(first.getTarget() - motorSetup.getLeftPositionInches());
                 radiusController.setTarget(0);
 
             }
@@ -72,7 +72,7 @@ public class ContinuousPath {
 
         // stop at end
         if (step >= segments.size()) {
-            drive.radialDrive(0, 0);
+            drive.radialDrive(false, 0, 0);
             return;
         }
 
@@ -86,7 +86,7 @@ public class ContinuousPath {
             // SmartDashboard.putNumber("turn error", turningController.getTarget() -
             // navx.getAngle());
 
-            drive.radialDrive(segment.getRadius(), speed, false);
+            drive.radialDrive(segment.getRadius() < 0, Math.abs(segment.getRadius()), speed, false);
 
             double err = segment.getTarget() - navx.getAngle();
 
@@ -140,9 +140,9 @@ public class ContinuousPath {
 
             double radius = Utils.getRadius(output);
 
-            drive.radialDrive(radius, speed, false);
+            drive.radialDrive(output < 0, radius, speed, false);
 
-            double err = segment.getTarget() - motorSetup.getLeftEncoderInches();
+            double err = segment.getTarget() - motorSetup.getLeftPositionInches();
 
             double currSign = Math.signum(err);
 

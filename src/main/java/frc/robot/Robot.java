@@ -108,8 +108,8 @@ public class Robot extends TimedRobot {
 
     SmartDashboard.putNumber("battery voltage", voltage);
 
-    SmartDashboard.putNumber("left encoder", motorSetup.getLeftEncoderInches());
-    SmartDashboard.putNumber("right encoder", motorSetup.getRightEncoderInches());
+    SmartDashboard.putNumber("left encoder", motorSetup.getLeftPositionInches());
+    SmartDashboard.putNumber("right encoder", motorSetup.getRightPositionInches());
     SmartDashboard.putNumber("heading", navx.getAngle());
 
     double vLeft = motorSetup.getLeftCanEncoder().getVelocity();
@@ -220,13 +220,17 @@ public class Robot extends TimedRobot {
     }
 
     double turnAxis = controller.getRawAxis(0);
-    double radius = Utils.getRadius(turnAxis);
+    double radius = Math.abs(Utils.getRadius(turnAxis));
+
+    boolean left = turnAxis < 0;
 
     if (controller.getPOV() == 270) {
-      radius = -24;
+      radius = 24;
+      left = true;
 
     } else if (controller.getPOV() == 90) {
       radius = 24;
+      left = false;
     }
 
     if (controller.getRawButton(2)) {
@@ -234,6 +238,8 @@ public class Robot extends TimedRobot {
       motorSetup.getRightCanEncoder().setPosition(0);
     }
 
+    radialDrive.radialDrive(left, radius, forwardAxis, true);
+/*
     if (controller.getRawButton(3)) {
       turningFlag = false;
     }
@@ -248,6 +254,7 @@ public class Robot extends TimedRobot {
       turningController.setTarget(navx.getAngle() - 90);
     } else
 
+    
     if (turningFlag) {
 
       double speed = turningController.getControlOutput(navx.getAngle());
@@ -263,8 +270,9 @@ public class Robot extends TimedRobot {
     }
 
     SmartDashboard.putBoolean("turning", turningFlag);
-
+*/
   }
+  
 
   /** This function is called once when the robot is disabled. */
   @Override

@@ -8,8 +8,12 @@ public abstract class DriveMotorSetup {
 
     public abstract SpeedController getRightMotorController();
 
-    public abstract double getLeftEncoderInches();
+    public abstract double getLeftPositionInches();
 
-    public abstract double getRightEncoderInches();
+    public abstract double getRightPositionInches();
+
+    public abstract double getLeftVelocityInchesPerSecond();
+
+    public abstract double getRightVelocityInchesPerSecond();
 
 }

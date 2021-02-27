@@ -27,13 +27,25 @@ public class OrigamiBotMotorSetup extends DriveMotorSetup {
     }
 
     @Override
-    public double getLeftEncoderInches() {
+    public double getLeftPositionInches() {
         // TODO Auto-generated method stub
         return 0;
     }
 
     @Override
-    public double getRightEncoderInches() {
+    public double getRightPositionInches() {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    @Override
+    public double getLeftVelocityInchesPerSecond() {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    @Override
+    public double getRightVelocityInchesPerSecond() {
         // TODO Auto-generated method stub
         return 0;
     }
