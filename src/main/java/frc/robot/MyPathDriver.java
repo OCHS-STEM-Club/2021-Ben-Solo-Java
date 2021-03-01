@@ -1,5 +1,4 @@
-// change to your package name
-package auto;
+package frc.robot;
 
 /**
  * Class specific to your robot that contains all drive code to follow a path
