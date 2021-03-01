@@ -1,5 +1,4 @@
-// change to your package name
-package auto;
+package frc.robot;
 
 /**
  * Abstract superclass for path driving. This class contains all
