@@ -1,5 +1,4 @@
-// change to your package name
-package auto;
+package frc.robot;
 
 /**
  * Class containing a heading and distance to drive
