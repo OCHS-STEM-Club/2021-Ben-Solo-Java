@@ -1,5 +1,7 @@
 package frc.robot;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 /**
  * Abstract superclass for path driving. This class contains all
  * logic to progress through each segment in the drive path.
@@ -57,7 +59,9 @@ public abstract class PathDriver {
 
   public void periodic() {
 
-    if (linearSegments == null || segmentIndex > linearSegments.length) {
+    SmartDashboard.putNumber("auto index", segmentIndex);
+
+    if (linearSegments == null || segmentIndex >= linearSegments.length) {
 
       if (!stopped) {
 
@@ -90,6 +94,8 @@ public abstract class PathDriver {
         segmentIndex++;
 
         if (segmentIndex < linearSegments.length) {
+
+          turning = true;
 
           turnInit(linearSegments[segmentIndex].getHeadingDegrees(), segmentIndex);
 

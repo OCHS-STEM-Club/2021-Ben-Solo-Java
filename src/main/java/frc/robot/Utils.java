@@ -4,7 +4,7 @@ import com.kauailabs.navx.frc.AHRS;
 
 public class Utils {
 
-    private static double INPUT_SCALE_FACTOR = 200;
+    private static double INPUT_SCALE_FACTOR = 500;
     private static double NEGATIVE_ZERO = -0.0d;
 
     public static double scaleAxis(double getRawAxis) {
@@ -16,7 +16,7 @@ public class Utils {
     public static double getRadius(double turnProp) {
 
         if (turnProp == 0) {
-            return 1e8;
+            return 1e12;
         }
 
         return INPUT_SCALE_FACTOR * (1 - Math.abs(turnProp)) / turnProp;

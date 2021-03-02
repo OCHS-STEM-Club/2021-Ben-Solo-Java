@@ -15,8 +15,8 @@ public class RadialDrive {
   // 5V = 95 in/s
 
   private static final double ROBOT_WIDTH = 17.5;
-  private static final double SPEED_LIMIT = 0.6;
-  private static final double MAX_VOLTAGE = 5; // ~95 in/s max speed
+  private static final double SPEED_LIMIT = 1;
+  private static final double MAX_VOLTAGE = 7; // ~135 in/s max speed
 
   public static final double STRAIGHT_RADIUS = 1e12;
 
@@ -63,6 +63,9 @@ public class RadialDrive {
       leftProp = rightProp;
       rightProp = tempLeftProp;
     }
+
+    SmartDashboard.putNumber("leftProp", leftProp);
+    SmartDashboard.putNumber("rightProp", rightProp);
 
     // set motor voltages proportional to maximum motor voltage
     leftGroup.setVoltage(leftProp * MAX_VOLTAGE);

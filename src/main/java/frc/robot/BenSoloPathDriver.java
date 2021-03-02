@@ -108,13 +108,16 @@ public class BenSoloPathDriver extends PathDriver {
 
     double radOutput = radiusController.getControlOutput(navx.getAngle());
 
+    boolean left = radOutput < 0;
+
     SmartDashboard.putNumber("drive radius output", radOutput);
+    SmartDashboard.putBoolean("drive left", left);
 
     double radius = Math.abs(Utils.getRadius(radOutput));
 
     double driveOutput = driveController.getControlOutput(motorSetup.getLeftPositionInches());
 
-    drive.radialDrive(output < 0, radius, driveOutput, false);
+    drive.radialDrive(left, radius, driveOutput, false);
 
     return driveController.atTarget();
 
