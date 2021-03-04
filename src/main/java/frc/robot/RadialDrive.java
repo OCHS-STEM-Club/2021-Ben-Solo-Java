@@ -13,10 +13,11 @@ public class RadialDrive {
   // 2.5V = 44 in/s
   // 3.6V = 66.5 in/s
   // 5V = 95 in/s
+  // 7V = 135 in/s
 
   private static final double ROBOT_WIDTH = 17.5;
   private static final double SPEED_LIMIT = 1;
-  private static final double MAX_VOLTAGE = 7; // ~135 in/s max speed
+  private static final double MAX_VOLTAGE = 8; // ? in/s max speed
 
   public static final double STRAIGHT_RADIUS = 1e12;
 

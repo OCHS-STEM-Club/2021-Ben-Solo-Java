@@ -26,7 +26,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * project.
  */
 public class Robot extends TimedRobot {
-  private AnalogPotentiometer pot = new AnalogPotentiometer(1);
 
   private BenSoloMotorSetup motorSetup = new BenSoloMotorSetup();
 
@@ -36,12 +35,8 @@ public class Robot extends TimedRobot {
 
   private AHRS navx = new AHRS();
 
-  private double startingAngle = 0;
-
-  private boolean turningFlag = false;
-
-  private PIDController turningController = new PIDController(0.018, 0, 0.0035);
-  private PIDController driveController = new PIDController(0.025, 0, 0.0025);
+  private PIDController turningController = new PIDController(0.0165, 0, 0.003);
+  private PIDController driveController = new PIDController(0.025, 0, 0.0020);
   private PIDController radiusController = new PIDController(0.8, 0, 0.25);
 
   private PIDController smartDashboadController = turningController;
@@ -51,13 +46,13 @@ public class Robot extends TimedRobot {
 
   public Robot() {
 
-    turningController.setMin(-1);
-    turningController.setMax(1);
-    turningController.setTargetDetection(3, 20);
+    turningController.setMin(-0.5);
+    turningController.setMax(0.5);
+    turningController.setTargetDetection(3, 15);
 
     driveController.setMin(-1);
     driveController.setMax(1);
-    driveController.setTargetDetection(3, 20);
+    driveController.setTargetDetection(3, 15);
 
     radiusController.setMin(-0.9);
     radiusController.setMax(0.9);
@@ -191,7 +186,6 @@ public class Robot extends TimedRobot {
     // navx.setAngleAdjustment(-startingAngle);
     navx.zeroYaw();
 
-    turningFlag = false;
 
   }
 
@@ -267,10 +261,27 @@ public class Robot extends TimedRobot {
   /** This function is called once when test mode is enabled. */
   @Override
   public void testInit() {
+  navx.zeroYaw();
+  turningController.setTarget(90);
   }
 
   /** This function is called periodically during test mode. */
   @Override
   public void testPeriodic() {
+
+    double turnError = turningController.getTarget() - navx.getAngle();
+
+    SmartDashboard.putNumber("turn error", turnError);
+
+    double turnSpeed = turningController.getControlOutput(navx.getAngle());
+
+    boolean left = turnSpeed < 0;
+
+    SmartDashboard.putBoolean("turn left", left);
+    SmartDashboard.putNumber("turn speed", turnSpeed);
+
+    // TODO: fix negative radius
+    radialDrive.radialDrive(left, 0, Math.abs(turnSpeed), false);
+
   }
 }
