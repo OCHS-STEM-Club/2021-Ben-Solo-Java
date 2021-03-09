@@ -44,6 +44,10 @@ public class Robot extends TimedRobot {
   private BenSoloPathDriver path = new BenSoloPathDriver(motorSetup, navx, turningController, driveController,
       radiusController, radialDrive);
 
+      
+  private ContinuousPath continuousPath = new ContinuousPath(motorSetup, navx, turningController, driveController,
+  radiusController, radialDrive);
+
   public Robot() {
 
     turningController.setMin(-0.5);
@@ -58,8 +62,8 @@ public class Robot extends TimedRobot {
     radiusController.setMax(0.9);
     // driveController.setTargetDetection(5, 20);
 
-    path.loadSegments(GeneratedPath.MAIN);
-    // continuousPath.addSegments(SavedPaths.MAIN);
+    //path.loadSegments(GeneratedPath.MAIN);
+     continuousPath.addSegments(SavedPaths.MAIN);
 
   }
 
@@ -148,8 +152,8 @@ public class Robot extends TimedRobot {
     motorSetup.getLeftCanEncoder().setPosition(0);
     motorSetup.getRightCanEncoder().setPosition(0);
 
-    path.init();
-    // continuousPath.initDrive();
+    //path.init();
+    continuousPath.initDrive();
 
     // radialDrive.setIPSTarget(false, 24, 30);
 
@@ -161,7 +165,9 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousPeriodic() {
 
-     path.periodic();
+     //path.periodic();
+
+     continuousPath.autoDrive();
 
     /*double radOutput = radiusController.getControlOutput(navx.getAngle());
 
