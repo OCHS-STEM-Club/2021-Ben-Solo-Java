@@ -12,7 +12,11 @@ public class Utils {
         return Math.signum(getRawAxis) * Math.pow(Math.abs(getRawAxis), 1.5);
 
     }
-
+    /**
+     * converts amount of turn (1 to -1) to actual radius
+     * @param turnProp 1 to -1; the amount wanted to turn
+     * @return radius value
+     */
     public static double getRadius(double turnProp) {
 
         if (turnProp == 0) {

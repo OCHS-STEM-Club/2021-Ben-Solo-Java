@@ -12,6 +12,8 @@ public abstract class RadialPathDriver {
   private RadialSegment[] radialSegments; // multiple segments make up a path totally not obvious
   private boolean stopped = false;
 
+  
+
   // implement this method in your extension of this class
   protected abstract void pathInit();
 
@@ -69,9 +71,9 @@ public abstract class RadialPathDriver {
 
     // prepearing robot for next action
     if (segment.isTurn()) {
-      arcInit(segment.getHeadingDegrees(), segment.getRadius(), segment.isTurningLeft(), i);
+      arcInit(segment.getHeadingDegrees(), segment.getRadius(), segment.isTurningLeft(), i); //uses navx
     } else {
-      straightInit(segment.getHeadingDegrees(), segment.getDistanceInches(), i);
+      straightInit(segment.getHeadingDegrees(), segment.getDistanceInches(), i); //uses encoders
     }
 
   }
