@@ -41,7 +41,7 @@ public class Robot extends TimedRobot {
 
   private PIDController smartDashboadController = turningController;
 
-  private BenSoloPathDriver path = new BenSoloPathDriver(motorSetup, navx, turningController, driveController,
+  private PathDriver path = new BenSoloPathDriver(motorSetup, navx, turningController, driveController,
       radiusController, radialDrive);
 
       
