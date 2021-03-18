@@ -44,9 +44,7 @@ public class Robot extends TimedRobot {
   private PathDriver path = new BenSoloPathDriver(motorSetup, navx, turningController, driveController,
       radiusController, radialDrive);
 
-      
-  private ContinuousPath continuousPath = new ContinuousPath(motorSetup, navx, turningController, driveController,
-  radiusController, radialDrive);
+  private BenSoloRadialPathDriver benSoloRadialPathDriver = new BenSoloRadialPathDriver(motorSetup, navx, turningController, driveController, radiusController, radialDrive);
 
   public Robot() {
 
@@ -63,7 +61,7 @@ public class Robot extends TimedRobot {
     // driveController.setTargetDetection(5, 20);
 
     //path.loadSegments(GeneratedPath.MAIN);
-     continuousPath.addSegments(SavedPaths.MAIN);
+     benSoloRadialPathDriver.loadSegments(SavedPaths.MAIN2);
 
   }
 
@@ -145,19 +143,8 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
 
-    // startingAngle = navx.getAngle();
-    // navx.setAngleAdjustment(-startingAngle);
-     navx.zeroYaw();
-
-    motorSetup.getLeftCanEncoder().setPosition(0);
-    motorSetup.getRightCanEncoder().setPosition(0);
-
     //path.init();
-    continuousPath.initDrive();
-
-    // radialDrive.setIPSTarget(false, 24, 30);
-
-    // radiusController.setTarget(0);
+    benSoloRadialPathDriver.init();
 
   }
 
@@ -166,22 +153,8 @@ public class Robot extends TimedRobot {
   public void autonomousPeriodic() {
 
      //path.periodic();
+     benSoloRadialPathDriver.periodic();
 
-     continuousPath.autoDrive();
-
-    /*double radOutput = radiusController.getControlOutput(navx.getAngle());
-
-    boolean left = radOutput < 0;
-
-    SmartDashboard.putNumber("drive radius output", radOutput);
-    SmartDashboard.putBoolean("drive left", left);
-
-    double radius = Math.abs(Utils.getRadius(radOutput));
-
-    SmartDashboard.putNumber("Radius", radius);
-
-    radialDrive.radialDrive(left, radius, 0.75, false);
-*/
   }
 
   /** This function is called once when teleop is enabled. */
