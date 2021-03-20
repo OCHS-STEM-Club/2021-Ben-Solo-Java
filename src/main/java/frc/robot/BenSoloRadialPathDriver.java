@@ -2,6 +2,8 @@ package frc.robot;
 
 import com.kauailabs.navx.frc.AHRS;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 public class BenSoloRadialPathDriver extends RadialPathDriver {
 
     private RadialDrive drive;
@@ -74,9 +76,12 @@ public class BenSoloRadialPathDriver extends RadialPathDriver {
         double currentDistanceInches = motorSetup.getLeftPositionInches(); // how far the robot has moved
         drive.radialDrive(correctionAmount < 0, getRadius, speed, false);
 
+        SmartDashboard.putNumber("target distance", targetDistanceInches);
+
         // if robot has gone desired distance or farther, returns true; if not, returns
         // false and keeps going
         return currentDistanceInches >= targetDistanceInches;
+
     }
 
     @Override

@@ -44,7 +44,8 @@ public class Robot extends TimedRobot {
   private PathDriver path = new BenSoloPathDriver(motorSetup, navx, turningController, driveController,
       radiusController, radialDrive);
 
-  private BenSoloRadialPathDriver benSoloRadialPathDriver = new BenSoloRadialPathDriver(motorSetup, navx, turningController, driveController, radiusController, radialDrive);
+  private BenSoloRadialPathDriver benSoloRadialPathDriver = new BenSoloRadialPathDriver(motorSetup, navx,
+      turningController, driveController, radiusController, radialDrive);
 
   public Robot() {
 
@@ -60,8 +61,8 @@ public class Robot extends TimedRobot {
     radiusController.setMax(0.9);
     // driveController.setTargetDetection(5, 20);
 
-    //path.loadSegments(GeneratedPath.MAIN);
-     benSoloRadialPathDriver.loadSegments(SavedPaths.MAIN2);
+    // path.loadSegments(GeneratedPath.MAIN);
+    benSoloRadialPathDriver.loadSegments(SavedPaths.MAIN2);
 
   }
 
@@ -76,6 +77,9 @@ public class Robot extends TimedRobot {
     // navx.setAngleAdjustment(-startingAngle);
 
     navx.zeroYaw();
+
+    motorSetup.getLeftCanEncoder().setPosition(0);
+    motorSetup.getRightCanEncoder().setPosition(0);
 
     SmartDashboard.putNumber("Kp", smartDashboadController.getKp());
     SmartDashboard.putNumber("Ki", smartDashboadController.getKi());
@@ -143,17 +147,37 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
 
-    //path.init();
+    long t = System.nanoTime();
+    SmartDashboard.putString("auto init time", t + "");
+
+    // path.init();
     benSoloRadialPathDriver.init();
 
   }
+
+  boolean hasRun = false;
 
   /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {
 
-     //path.periodic();
-     benSoloRadialPathDriver.periodic();
+    // !true = false
+    // !false = true
+
+    /*
+     * if hasRun is true, !hasRun evaluates to false, so the code inside the if
+     * statement is not executed
+     */
+
+    if (!hasRun) {
+      long t = System.nanoTime();
+      SmartDashboard.putString("auto periodic time", t + "");
+
+      hasRun = true;
+    }
+
+    // path.periodic();
+    benSoloRadialPathDriver.periodic();
 
   }
 
@@ -164,7 +188,6 @@ public class Robot extends TimedRobot {
     // startingAngle = navx.getAngle();
     // navx.setAngleAdjustment(-startingAngle);
     navx.zeroYaw();
-
 
   }
 
@@ -240,8 +263,8 @@ public class Robot extends TimedRobot {
   /** This function is called once when test mode is enabled. */
   @Override
   public void testInit() {
-  navx.zeroYaw();
-  turningController.setTarget(90);
+    navx.zeroYaw();
+    turningController.setTarget(90);
   }
 
   /** This function is called periodically during test mode. */
