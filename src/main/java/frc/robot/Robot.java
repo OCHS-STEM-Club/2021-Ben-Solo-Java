@@ -47,6 +47,8 @@ public class Robot extends TimedRobot {
   private BenSoloRadialPathDriver benSoloRadialPathDriver = new BenSoloRadialPathDriver(motorSetup, navx,
       turningController, driveController, radiusController, radialDrive);
 
+  private LimeLight limeLight = new LimeLight();
+
   public Robot() {
 
     turningController.setMin(-0.5);
@@ -99,6 +101,18 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() {
 
+    double targetOffsetAngleHorizontal = limeLight.getTargetOffsetAngleHorizontal();
+    double targetOffsetAngleVertical = limeLight.getTargetOffsetAngleVertical();
+    double targetArea = limeLight.getTargetArea();
+    double targetSkew = limeLight.getTargetSkew();
+
+    SmartDashboard.putNumber("_tx", targetOffsetAngleHorizontal);
+    SmartDashboard.putNumber("_ty", targetOffsetAngleVertical);
+    SmartDashboard.putNumber("_ta", targetArea);
+    SmartDashboard.putNumber("_ts", targetSkew);
+
+    System.out.println(String.format("x: %f, y: %f", targetOffsetAngleHorizontal, targetOffsetAngleVertical));
+
     double voltage = RobotController.getBatteryVoltage();
 
     SmartDashboard.putNumber("battery voltage", voltage);
@@ -129,6 +143,8 @@ public class Robot extends TimedRobot {
       motorSetup.getRightCanEncoder().setPosition(0);
 
     }
+
+
 
   }
 
@@ -194,6 +210,16 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
+
+    double targetOffsetAngleHorizontal = limeLight.getTargetOffsetAngleHorizontal();
+    double targetOffsetAngleVertical = limeLight.getTargetOffsetAngleVertical();
+    double targetArea = limeLight.getTargetArea();
+    double targetSkew = limeLight.getTargetSkew();
+
+    SmartDashboard.putNumber("_tx", targetOffsetAngleHorizontal);
+    SmartDashboard.putNumber("_ty", targetOffsetAngleVertical);
+    SmartDashboard.putNumber("_ta", targetArea);
+    SmartDashboard.putNumber("_ts", targetSkew);
 
     double forwardAxis = controller.getRawAxis(3) - controller.getRawAxis(2);
 
