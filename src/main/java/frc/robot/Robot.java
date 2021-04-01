@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.SpeedController;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
@@ -49,6 +50,10 @@ public class Robot extends TimedRobot {
 
   private LimeLight limeLight = new LimeLight();
 
+  SendableChooser<LinearSegment[]> sendableChooser = new SendableChooser<LinearSegment[]>();
+
+  SendableChooser<Integer> galacticSearchSendableChooser = new SendableChooser<Integer>();
+
   public Robot() {
 
     turningController.setMin(-0.5);
@@ -63,9 +68,20 @@ public class Robot extends TimedRobot {
     radiusController.setMax(0.9);
     // driveController.setTargetDetection(5, 20);
 
-    // path.loadSegments(GeneratedPath.MAIN);
-    benSoloRadialPathDriver.loadSegments(SavedPaths.MAIN2);
+    //path.loadSegments(GeneratedPath.MAIN);
+    // benSoloRadialPathDriver.loadSegments(SavedPaths.MAIN2);
 
+    sendableChooser.setDefaultOption("Barrel", SavedPaths.BARREL);
+    sendableChooser.addOption("Slalom", SavedPaths.SLALOM);
+    sendableChooser.addOption("Bounce", SavedPaths.BOUNCE);
+    sendableChooser.addOption("A1", SavedPaths.A1);
+    sendableChooser.addOption("A2", SavedPaths.A2);
+    sendableChooser.addOption("B1", SavedPaths.B1);
+    sendableChooser.addOption("B2", SavedPaths.B2);
+
+    galacticSearchSendableChooser.setDefaultOption("AutoNav", 0);
+    galacticSearchSendableChooser.addOption("Course A", 1);
+    galacticSearchSendableChooser.addOption("Course B", 2);
   }
 
   /**
@@ -74,6 +90,9 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
+
+    SmartDashboard.putData(sendableChooser);
+    SmartDashboard.putData(galacticSearchSendableChooser);
 
     // startingAngle = navx.getAngle();
     // navx.setAngleAdjustment(-startingAngle);
@@ -144,8 +163,6 @@ public class Robot extends TimedRobot {
 
     }
 
-
-
   }
 
   /**
@@ -166,8 +183,31 @@ public class Robot extends TimedRobot {
     long t = System.nanoTime();
     SmartDashboard.putString("auto init time", t + "");
 
-    // path.init();
-    benSoloRadialPathDriver.init();
+
+    if (galacticSearchSendableChooser.getSelected() == 0) { // Defers to manual path chooser
+
+      path.loadSegments(sendableChooser.getSelected());
+
+    } else if (galacticSearchSendableChooser.getSelected() == 1) { // Loads segments for Galactic Search course A
+
+      if (limeLight.courseAFirstRedBallIsThere()) {
+        path.loadSegments(SavedPaths.A1);
+      } else {
+        path.loadSegments(SavedPaths.A2);
+      }
+
+    } else { // Loads segments for Galactic Search course B
+
+      if (limeLight.courseBFirstRedBallIsThere()) {
+        path.loadSegments(SavedPaths.B1);
+      } else {
+        path.loadSegments(SavedPaths.B2);
+      }
+
+    }
+
+    path.init();
+    // benSoloRadialPathDriver.init();
 
   }
 
@@ -192,8 +232,8 @@ public class Robot extends TimedRobot {
       hasRun = true;
     }
 
-    // path.periodic();
-    benSoloRadialPathDriver.periodic();
+    path.periodic();
+    // benSoloRadialPathDriver.periodic();
 
   }
 

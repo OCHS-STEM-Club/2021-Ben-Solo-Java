@@ -9,6 +9,12 @@ public class LimeLight {
     NetworkTableEntry networkTableEntry;
     NetworkTableInstance networkTableInstance;
 
+    public boolean courseAFirstRedBallIsThere() {
+        return false;
+    }
+    public boolean courseBFirstRedBallIsThere() {
+        return false;
+    }
 
 
     public double getTargetOffsetAngleHorizontal() {
@@ -26,5 +32,7 @@ public class LimeLight {
     public double getTargetSkew() {
         return limeLightTable.getEntry("ts").getDouble(0.0);
     }
+
+    
 
 }
