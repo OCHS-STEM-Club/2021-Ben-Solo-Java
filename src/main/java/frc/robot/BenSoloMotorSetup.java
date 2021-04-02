@@ -1,7 +1,9 @@
 package frc.robot;
 
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.revrobotics.CANEncoder;
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANError;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
@@ -21,8 +23,16 @@ public class BenSoloMotorSetup extends DriveMotorSetup {
     private CANEncoder rightCanEncoder = driveMotorRight.getEncoder();
     private static final double GEAR_RATIO = (60d / 11d) * (50d / 38d);
     private static final double WHEEL_DIAMETER = 6; // inches
+    private WPI_TalonSRX intakeMotor = new WPI_TalonSRX(11);
 
     public BenSoloMotorSetup() {
+
+        driveMotorLeft.setIdleMode(IdleMode.kBrake);
+        driveMotorRight.setIdleMode(IdleMode.kBrake);
+        slaveMotorLeft1.setIdleMode(IdleMode.kBrake);
+        slaveMotorLeft2.setIdleMode(IdleMode.kBrake);
+        slaveMotorRight1.setIdleMode(IdleMode.kBrake);
+        slaveMotorRight2.setIdleMode(IdleMode.kBrake);
 
         slaveMotorLeft1.follow(driveMotorLeft, false);
         slaveMotorLeft2.follow(driveMotorLeft, false);
@@ -35,6 +45,8 @@ public class BenSoloMotorSetup extends DriveMotorSetup {
         slaveMotorRight1.setSmartCurrentLimit(60);
         slaveMotorLeft2.setSmartCurrentLimit(60);
         slaveMotorRight2.setSmartCurrentLimit(60);
+
+
 
         driveMotorLeft.setOpenLoopRampRate(0.35);
         driveMotorRight.setOpenLoopRampRate(0.35);
@@ -93,5 +105,10 @@ public class BenSoloMotorSetup extends DriveMotorSetup {
     public double getRightVelocityInchesPerSecond() {
         return rightCanEncoder.getVelocity();
     }
+
+    public SpeedController getIntakeMotor() {
+        return intakeMotor;
+    }
+
 
 }

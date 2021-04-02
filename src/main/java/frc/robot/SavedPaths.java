@@ -77,37 +77,33 @@ public class SavedPaths {
     */
 
    
+
     public static LinearSegment[] A1 = new LinearSegment[] {
-        new LinearSegment(0.00, 75.00),
+        new LinearSegment(0.00, 60.00),
         new LinearSegment(26.57, 67.08),
-        new LinearSegment(-83.66, 90.55),
-        new LinearSegment(21.16, 166.21),
-        new LinearSegment(0.00, 30.00)
+        new LinearSegment(-71.57, 94.87),
+        new LinearSegment(21.80, 161.55)
     };
 
     public static LinearSegment[] A2 = new LinearSegment[] {
-        new LinearSegment(0.00, 30.00),
-        new LinearSegment(27.55, 129.71),
-        new LinearSegment(-60.95, 102.96),
+        new LinearSegment(21.80, 161.55),
+        new LinearSegment(-71.57, 94.87),
         new LinearSegment(26.57, 67.08),
-        new LinearSegment(0.00, 75.00)
+        new LinearSegment(0.00, 60.00)
     };
 
     public static LinearSegment[] B1 = new LinearSegment[] {
-        new LinearSegment(0.00, 30.00),
-        new LinearSegment(-33.69, 54.08),
+        new LinearSegment(-26.57, 67.08),
         new LinearSegment(45.00, 84.85),
         new LinearSegment(-45.00, 84.85),
-        new LinearSegment(15.95, 109.20),
-        new LinearSegment(0.00, 30.00)
+        new LinearSegment(14.04, 123.69)
     };
 
     public static LinearSegment[] B2 = new LinearSegment[] {
-        new LinearSegment(0.00, 30.00),
-        new LinearSegment(12.53, 138.29),
+        new LinearSegment(11.31, 152.97),
         new LinearSegment(-45.00, 84.85),
         new LinearSegment(45.00, 84.85),
-        new LinearSegment(-63.43, 33.54),
-        new LinearSegment(0.00, 30.00)
+        new LinearSegment(-45.00, 42.43)
     };
+    
 }

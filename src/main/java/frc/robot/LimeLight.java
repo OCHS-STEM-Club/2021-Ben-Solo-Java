@@ -10,10 +10,20 @@ public class LimeLight {
     NetworkTableInstance networkTableInstance;
 
     public boolean courseAFirstRedBallIsThere() {
-        return false;
+        double xValue = getTargetOffsetAngleHorizontal();
+        double yValue = getTargetOffsetAngleVertical();
+        boolean horizontalRange = xValue >= -2 && xValue <= 6;
+        boolean verticalRange = yValue >= -14 && yValue <= -6;
+        boolean targetRange = horizontalRange && verticalRange;
+        return targetRange;
     }
     public boolean courseBFirstRedBallIsThere() {
-        return false;
+        double xValue = getTargetOffsetAngleHorizontal();
+        double yValue = getTargetOffsetAngleVertical();
+        boolean horizontalRange = xValue >= -22 && xValue <= -14;
+        boolean verticalRange = yValue >= -14 && yValue <= -6;
+        boolean targetRange = horizontalRange && verticalRange;
+        return targetRange;
     }
 
 

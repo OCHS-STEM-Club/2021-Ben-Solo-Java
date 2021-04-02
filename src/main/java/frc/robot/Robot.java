@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.SpeedController;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -31,6 +32,8 @@ public class Robot extends TimedRobot {
   private BenSoloMotorSetup motorSetup = new BenSoloMotorSetup();
 
   private XboxController controller = new XboxController(0);
+
+  private DifferentialDrive differentialDrive = new DifferentialDrive(motorSetup.getLeftMotorController(), motorSetup.getRightMotorController());
 
   private RadialDrive radialDrive = new RadialDrive(motorSetup);
 
@@ -91,8 +94,8 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
 
-    SmartDashboard.putData(sendableChooser);
-    SmartDashboard.putData(galacticSearchSendableChooser);
+    SmartDashboard.putData("sendable chooser", sendableChooser);
+    SmartDashboard.putData("galactic", galacticSearchSendableChooser);
 
     // startingAngle = navx.getAngle();
     // navx.setAngleAdjustment(-startingAngle);
@@ -120,17 +123,18 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() {
 
+    SmartDashboard.putBoolean("Course A Ball Detected", limeLight.courseAFirstRedBallIsThere());
+    SmartDashboard.putBoolean("Course B Ball Detected", limeLight.courseBFirstRedBallIsThere());
+
     double targetOffsetAngleHorizontal = limeLight.getTargetOffsetAngleHorizontal();
     double targetOffsetAngleVertical = limeLight.getTargetOffsetAngleVertical();
     double targetArea = limeLight.getTargetArea();
     double targetSkew = limeLight.getTargetSkew();
 
-    SmartDashboard.putNumber("_tx", targetOffsetAngleHorizontal);
-    SmartDashboard.putNumber("_ty", targetOffsetAngleVertical);
-    SmartDashboard.putNumber("_ta", targetArea);
-    SmartDashboard.putNumber("_ts", targetSkew);
-
-    System.out.println(String.format("x: %f, y: %f", targetOffsetAngleHorizontal, targetOffsetAngleVertical));
+    SmartDashboard.putNumber("tx", targetOffsetAngleHorizontal);
+    SmartDashboard.putNumber("ty", targetOffsetAngleVertical);
+    SmartDashboard.putNumber("ta", targetArea);
+    SmartDashboard.putNumber("ts", targetSkew);
 
     double voltage = RobotController.getBatteryVoltage();
 
@@ -180,10 +184,12 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
 
+    navx.zeroYaw();
+    
     long t = System.nanoTime();
     SmartDashboard.putString("auto init time", t + "");
 
-
+/*
     if (galacticSearchSendableChooser.getSelected() == 0) { // Defers to manual path chooser
 
       path.loadSegments(sendableChooser.getSelected());
@@ -196,15 +202,28 @@ public class Robot extends TimedRobot {
         path.loadSegments(SavedPaths.A2);
       }
 
+
     } else { // Loads segments for Galactic Search course B
+      */
+
 
       if (limeLight.courseBFirstRedBallIsThere()) {
         path.loadSegments(SavedPaths.B1);
       } else {
         path.loadSegments(SavedPaths.B2);
+      } 
+    
+/*}
+      if (limeLight.courseAFirstRedBallIsThere()) {
+        path.loadSegments(SavedPaths.A1);
+      } else {
+        path.loadSegments(SavedPaths.A2);
       }
+      */
 
-    }
+      motorSetup.getIntakeMotor().set(-0.8);
+      
+   
 
     path.init();
     // benSoloRadialPathDriver.init();
@@ -251,6 +270,8 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
 
+
+
     double targetOffsetAngleHorizontal = limeLight.getTargetOffsetAngleHorizontal();
     double targetOffsetAngleVertical = limeLight.getTargetOffsetAngleVertical();
     double targetArea = limeLight.getTargetArea();
@@ -266,11 +287,23 @@ public class Robot extends TimedRobot {
     // forwardAxis = Utils.scaleAxis(forwardAxis);
 
     if (controller.getRawButton(1)) {
-      forwardAxis = 0.5 * forwardAxis;
-    }
+      //forwardAxis = 0.5 * forwardAxis;
+      motorSetup.getIntakeMotor().set(-0.8);
+    }else if (controller.getRawButton(2)){
+        motorSetup.getIntakeMotor().set(0.8);
+    }else motorSetup.getIntakeMotor().set(0);
+  
 
-    double turnAxis = controller.getRawAxis(0);
+
+
+    double turnAxis = controller.getRawAxis(4);
+    double throttleAxis = -controller.getRawAxis(1);
     double radius = Math.abs(Utils.getRadius(turnAxis));
+
+    if (controller.getRawAxis(3) > 0.75){
+      throttleAxis *= 0.5;
+      turnAxis *= 0.5;
+    }
 
     boolean left = turnAxis < 0;
 
@@ -287,29 +320,9 @@ public class Robot extends TimedRobot {
       motorSetup.getLeftCanEncoder().setPosition(0);
       motorSetup.getRightCanEncoder().setPosition(0);
     }
-    radialDrive.radialDrive(left, radius, forwardAxis);
-    /*
-     * if (controller.getRawButton(3)) { turningFlag = false; }
-     * 
-     * if (controller.getRawButton(6)) { turningFlag = true;
-     * turningController.setTarget(navx.getAngle() + 90); } else
-     * 
-     * if (controller.getRawButton(5)) { turningFlag = true;
-     * turningController.setTarget(navx.getAngle() - 90); } else
-     * 
-     * 
-     * if (turningFlag) {
-     * 
-     * double speed = turningController.getControlOutput(navx.getAngle());
-     * 
-     * radialDrive.radialDrive(0, speed, false);
-     * 
-     * if (turningController.atTarget()) { turningFlag = false; }
-     * 
-     * } else { radialDrive.radialDrive(radius, forwardAxis); }
-     * 
-     * SmartDashboard.putBoolean("turning", turningFlag);
-     */
+    //radialDrive.radialDrive(left, radius, forwardAxis);
+    differentialDrive.arcadeDrive(throttleAxis, turnAxis);
+    
   }
 
   /** This function is called once when the robot is disabled. */
