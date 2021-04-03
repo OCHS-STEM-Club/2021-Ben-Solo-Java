@@ -33,7 +33,8 @@ public class Robot extends TimedRobot {
 
   private XboxController controller = new XboxController(0);
 
-  private DifferentialDrive differentialDrive = new DifferentialDrive(motorSetup.getLeftMotorController(), motorSetup.getRightMotorController());
+  private DifferentialDrive differentialDrive = new DifferentialDrive(motorSetup.getLeftMotorController(),
+      motorSetup.getRightMotorController());
 
   private RadialDrive radialDrive = new RadialDrive(motorSetup);
 
@@ -57,10 +58,12 @@ public class Robot extends TimedRobot {
 
   SendableChooser<Integer> galacticSearchSendableChooser = new SendableChooser<Integer>();
 
+  private boolean isTurning = false;
+
   public Robot() {
 
-    turningController.setMin(-0.5);
-    turningController.setMax(0.5);
+    turningController.setMin(-0.4);
+    turningController.setMax(0.4);
     turningController.setTargetDetection(3, 15);
 
     driveController.setMin(-1);
@@ -71,7 +74,7 @@ public class Robot extends TimedRobot {
     radiusController.setMax(0.9);
     // driveController.setTargetDetection(5, 20);
 
-    //path.loadSegments(GeneratedPath.MAIN);
+    // path.loadSegments(GeneratedPath.MAIN);
     // benSoloRadialPathDriver.loadSegments(SavedPaths.MAIN2);
 
     sendableChooser.setDefaultOption("Barrel", SavedPaths.BARREL);
@@ -85,6 +88,9 @@ public class Robot extends TimedRobot {
     galacticSearchSendableChooser.setDefaultOption("AutoNav", 0);
     galacticSearchSendableChooser.addOption("Course A", 1);
     galacticSearchSendableChooser.addOption("Course B", 2);
+
+    SmartDashboard.putData("Autonomous Course Selection", sendableChooser);
+    SmartDashboard.putData("Autonomous Mode", galacticSearchSendableChooser);
   }
 
   /**
@@ -94,8 +100,8 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
 
-    SmartDashboard.putData("sendable chooser", sendableChooser);
-    SmartDashboard.putData("galactic", galacticSearchSendableChooser);
+    SmartDashboard.putData("Autonomous Course Selection", sendableChooser);
+    SmartDashboard.putData("Autonomous Mode", galacticSearchSendableChooser);
 
     // startingAngle = navx.getAngle();
     // navx.setAngleAdjustment(-startingAngle);
@@ -185,11 +191,12 @@ public class Robot extends TimedRobot {
   public void autonomousInit() {
 
     navx.zeroYaw();
-    
+
+
+
     long t = System.nanoTime();
     SmartDashboard.putString("auto init time", t + "");
 
-/*
     if (galacticSearchSendableChooser.getSelected() == 0) { // Defers to manual path chooser
 
       path.loadSegments(sendableChooser.getSelected());
@@ -201,29 +208,23 @@ public class Robot extends TimedRobot {
       } else {
         path.loadSegments(SavedPaths.A2);
       }
-
+      motorSetup.getIntakeMotor().set(-0.8);
 
     } else { // Loads segments for Galactic Search course B
-      */
-
 
       if (limeLight.courseBFirstRedBallIsThere()) {
         path.loadSegments(SavedPaths.B1);
       } else {
         path.loadSegments(SavedPaths.B2);
-      } 
-    
-/*}
-      if (limeLight.courseAFirstRedBallIsThere()) {
-        path.loadSegments(SavedPaths.A1);
-      } else {
-        path.loadSegments(SavedPaths.A2);
       }
-      */
-
       motorSetup.getIntakeMotor().set(-0.8);
-      
-   
+
+    }
+    /*
+     * if (limeLight.courseAFirstRedBallIsThere()) {
+     * path.loadSegments(SavedPaths.A1); } else { path.loadSegments(SavedPaths.A2);
+     * }
+     */
 
     path.init();
     // benSoloRadialPathDriver.init();
@@ -260,9 +261,9 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopInit() {
 
-    // startingAngle = navx.getAngle();
-    // navx.setAngleAdjustment(-startingAngle);
     navx.zeroYaw();
+    
+
 
   }
 
@@ -270,12 +271,11 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
 
-
-
     double targetOffsetAngleHorizontal = limeLight.getTargetOffsetAngleHorizontal();
     double targetOffsetAngleVertical = limeLight.getTargetOffsetAngleVertical();
     double targetArea = limeLight.getTargetArea();
     double targetSkew = limeLight.getTargetSkew();
+    
 
     SmartDashboard.putNumber("_tx", targetOffsetAngleHorizontal);
     SmartDashboard.putNumber("_ty", targetOffsetAngleVertical);
@@ -284,23 +284,25 @@ public class Robot extends TimedRobot {
 
     double forwardAxis = controller.getRawAxis(3) - controller.getRawAxis(2);
 
+    if (controller.getRawButton(6)){
+      isTurning = true;
+      turningController.setTarget(navx.getAngle() + 90);
+    }
     // forwardAxis = Utils.scaleAxis(forwardAxis);
 
     if (controller.getRawButton(1)) {
-      //forwardAxis = 0.5 * forwardAxis;
+      // forwardAxis = 0.5 * forwardAxis;
       motorSetup.getIntakeMotor().set(-0.8);
-    }else if (controller.getRawButton(2)){
-        motorSetup.getIntakeMotor().set(0.8);
-    }else motorSetup.getIntakeMotor().set(0);
-  
-
-
+    } else if (controller.getRawButton(2)) {
+      motorSetup.getIntakeMotor().set(0.8);
+    } else
+      motorSetup.getIntakeMotor().set(0);
 
     double turnAxis = controller.getRawAxis(4);
     double throttleAxis = -controller.getRawAxis(1);
     double radius = Math.abs(Utils.getRadius(turnAxis));
 
-    if (controller.getRawAxis(3) > 0.75){
+    if (controller.getRawAxis(3) > 0.75) {
       throttleAxis *= 0.5;
       turnAxis *= 0.5;
     }
@@ -320,9 +322,16 @@ public class Robot extends TimedRobot {
       motorSetup.getLeftCanEncoder().setPosition(0);
       motorSetup.getRightCanEncoder().setPosition(0);
     }
-    //radialDrive.radialDrive(left, radius, forwardAxis);
+    // radialDrive.radialDrive(left, radius, forwardAxis);
     differentialDrive.arcadeDrive(throttleAxis, turnAxis);
-    
+
+    if(isTurning){
+      radialDrive.radialDrive(false, 0, turningController.getControlOutput(navx.getAngle()));
+      if (turningController.atTarget()){
+        isTurning = false;
+      }
+    }
+
   }
 
   /** This function is called once when the robot is disabled. */

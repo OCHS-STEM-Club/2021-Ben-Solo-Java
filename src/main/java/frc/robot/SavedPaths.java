@@ -31,18 +31,19 @@ public class SavedPaths {
         new LinearSegment(-180.00, 60.00)
     };
 
+
+
     public static LinearSegment[] BOUNCE = new LinearSegment[] {
         new LinearSegment(0.00, 45.00),
         new LinearSegment(-75.96, 61.85),
         new LinearSegment(73.74, 125.00),
-        new LinearSegment(0.00, 45.00),
-        new LinearSegment(-85.24, 120.42),
-        new LinearSegment(85.24, 120.42),
-        new LinearSegment(0.00, 75.00),
+        new LinearSegment(0.00, 50.00),
         new LinearSegment(-87.61, 120.10),
+        new LinearSegment(87.61, 120.10),
+        new LinearSegment(0.00, 90.00),
+        new LinearSegment(-94.76, 120.42),
         new LinearSegment(63.43, 67.08)
     };
-
 
 
     /*

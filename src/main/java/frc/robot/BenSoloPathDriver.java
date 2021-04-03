@@ -38,6 +38,8 @@ public class BenSoloPathDriver extends PathDriver {
    */
   @Override protected void pathInit() {
 
+    navx.zeroYaw();
+
     // place any initialization code here
 
   }
